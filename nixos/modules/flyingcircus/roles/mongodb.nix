@@ -69,12 +69,12 @@ in
       '';
 
 
-    # flyingcircus.services.sensu-client.checks = {
-    #   postgresql = {
-    #     notification = "PostgreSQL alive";
-    #     command =  "/var/setuid-wrappers/sudo -u postgres check-postgres-alive.rb -d postgres";
-    #   };
-    # };
+  flyingcircus.services.sensu-client.checks = {
+      mongodb = {
+       notification = "MongoDB alive";
+       command =  "/var/setuid-wrappers/sudo -u mongodb check-mongodb.rb -d mongodb";
+     };
+  };
 
   };
 
