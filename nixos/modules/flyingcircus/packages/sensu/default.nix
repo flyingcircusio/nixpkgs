@@ -1,12 +1,5 @@
 { lib, bundlerEnv, ruby_2_0, python2, pkgs, which, defaultGemConfig, zlib, libxml2, graphicsmagick, pkgconfig, imagemagickBig }:
 
-let
-    pyenv = python2.buildEnv.override {
-      extraLibs = with pkgs.python2Packages;
-        [ pymongo ];
-    } ;
-in
-
 bundlerEnv {
   name = "sensu-0.22.1";
 
@@ -33,18 +26,9 @@ bundlerEnv {
       buildInputs = with pkgs; [ redis ];
     };
     mongo = attrs: {
-      buildInputs = with pkgs; [ mongodb ];
+     # buildInputs = with pkgs; [ mongodb ];
     };
-    sensu-plugins-mongodb = attrs: {
-      buildInputs = [ pyenv ];
-      postPatch = ''
-        # the ruby check runs a python script
-        # patchShebangs bin/check-mongodb.py
-        substituteInPlace bin/check-mongodb.py \
-        --replace "#!/usr/bin/env python" "#!${pyenv}/bin/python"
-      '';
-    };
-  };
+};
 
   meta = with lib; {
     description = "A monitoring framework that aims to be simple, malleable, and scalable";

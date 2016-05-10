@@ -2,7 +2,7 @@
 
 let
   cfg = config.flyingcircus;
-  fclib = import ../lib;
+  fclib = import ../../lib;
 
   listen_addresses =
     fclib.listenAddresses config "lo" ++
@@ -14,6 +14,8 @@ let
     if pathExists local_config_path
     then builtins.readFile  local_config_path
     else "";
+
+   mongo_check  = pkgs.callPackage ./check.nix { };
 
 in
 {
@@ -72,7 +74,7 @@ in
   flyingcircus.services.sensu-client.checks = {
       mongodb = {
        notification = "MongoDB alive";
-       command =  "/var/setuid-wrappers/sudo -u mongodb check-mongodb.rb -d mongodb";
+       command =  "/var/setuid-wrappers/sudo -u mongodb ${mongo_check}/bin/check_mongo -d mongodb";
      };
   };
 

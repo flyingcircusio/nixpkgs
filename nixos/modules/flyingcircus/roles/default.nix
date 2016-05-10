@@ -20,7 +20,7 @@ in
      ./generic.nix
      ./haproxy.nix
      ./mailserver.nix
-     ./mongodb.nix
+     ./mongodb
      ./mysql.nix
      ./nginx.nix
      ./postgresql.nix
