@@ -21,7 +21,7 @@ in
      ./haproxy.nix
      ./java.nix
      ./mailserver.nix
-     ./mongodb.nix
+     ./mongodb
      ./mysql.nix
      ./nginx.nix
      ./postgresql.nix

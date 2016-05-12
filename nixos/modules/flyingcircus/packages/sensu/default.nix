@@ -1,4 +1,4 @@
-{ lib, bundlerEnv, ruby_2_0, pkgs, which, defaultGemConfig, zlib, libxml2, graphicsmagick, pkgconfig, imagemagickBig, mysql }:
+{ lib, bundlerEnv, ruby_2_0, python2, pkgs, which, defaultGemConfig, zlib, libxml2, graphicsmagick, pkgconfig, imagemagickBig }:
 
 bundlerEnv {
   name = "sensu-0.22.1";
@@ -20,14 +20,15 @@ bundlerEnv {
       buildInputs = [ which graphicsmagick pkgconfig imagemagickBig ];
     };
     mysql = attrs: {
-      buildInputs = [ mysql ];
+      buildInputs = with pkgs; [ mysql ];
     };
-
     redis = attrs: {
-      buildInputs = [ pkgs.redis ];
+      buildInputs = with pkgs; [ redis ];
     };
-
-  };
+    mongo = attrs: {
+     # buildInputs = with pkgs; [ mongodb ];
+    };
+};
 
   meta = with lib; {
     description = "A monitoring framework that aims to be simple, malleable, and scalable";

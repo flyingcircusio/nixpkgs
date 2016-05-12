@@ -54,6 +54,23 @@
       "xml-simple"
     ];
   };
+  "bson" = {
+    version = "1.12.3";
+    source = {
+      type = "gem";
+      sha256 = "0r8h83d4wh9yi1r80hz91as6nc2b0yl6xarmfxjrdrzl7mdgcyx6";
+    };
+  };
+  "bson_ext" = {
+    version = "1.12.3";
+    source = {
+      type = "gem";
+      sha256 = "1wyfasc304spafd5mm9hv195vinh79yrbdq8yym4s7xry9rbifcy";
+    };
+    dependencies = [
+      "bson"
+    ];
+  };
   "childprocess" = {
     version = "0.5.8";
     source = {
@@ -244,11 +261,21 @@
     };
   };
   "mixlib-cli" = {
-    version = "1.5.0";
+    version = "1.6.0";
     source = {
       type = "gem";
-      sha256 = "0im6jngj76azrz0nv69hgpy1af4smcgpfvmmwh5iwsqwa46zx0k0";
+      sha256 = "1n2r9l8i5vx5zz1zcizpq0ml6d13aczv42cnwjggnz2p98disf41";
     };
+  };
+  "mongo" = {
+    version = "1.12.3";
+    source = {
+      type = "gem";
+      sha256 = "0y0axsmd8x7f1417hd257r6bb4k4n3rgb5188bqcsyp082jgp85j";
+    };
+    dependencies = [
+      "bson"
+    ];
   };
   "multi_json" = {
     version = "1.11.2";
@@ -470,6 +497,19 @@
       "erubis"
       "mail"
       "mailgun-ruby"
+      "sensu-plugin"
+    ];
+  };
+  "sensu-plugins-mongodb" = {
+    version = "0.0.8";
+    source = {
+      type = "gem";
+      sha256 = "120ay9kclypqf3rx4xv2cgay0hi8hvql0xzlfpyamxvbgqdfn532";
+    };
+    dependencies = [
+      "bson"
+      "bson_ext"
+      "mongo"
       "sensu-plugin"
     ];
   };
