@@ -13,32 +13,39 @@ let
   pidFile = "${cfg.pidDir}/mysqld.pid";
 
   mysqldOptions =
-    "--user=${cfg.user} --datadir=${cfg.dataDir} --basedir=${mysql} ";
+    "--user=${cfg.user} --datadir=${cfg.dataDir} --basedir=${mysql}";
 
   myCnf = pkgs.writeText "my.cnf"
   ''
     [mysqld]
     port = ${toString cfg.port}
-    ${optionalString (cfg.replication.role == "master" || cfg.replication.role == "slave") "log-bin=mysql-bin"}
-    ${optionalString (cfg.replication.role == "master" || cfg.replication.role == "slave") "server-id = ${toString cfg.replication.serverId}"}
+    ${optionalString
+      (cfg.replication.role == "master" || cfg.replication.role == "slave")
+      "log-bin=mysql-bin"}
+    ${optionalString
+      (cfg.replication.role == "master" || cfg.replication.role == "slave")
+      "server-id = ${toString cfg.replication.serverId}"}
     ${optionalString (cfg.replication.role == "slave" && !atLeast55)
-    ''
-      master-host = ${cfg.replication.masterHost}
-      master-user = ${cfg.replication.masterUser}
-      master-password = ${cfg.replication.masterPassword}
-      master-port = ${toString cfg.replication.masterPort}
-    ''}
+      ''
+        master-host = ${cfg.replication.masterHost}
+        master-user = ${cfg.replication.masterUser}
+        master-password = ${cfg.replication.masterPassword}
+        master-port = ${toString cfg.replication.masterPort}
+      ''}
     ${cfg.extraOptions}
   '';
 
+  mysqlInit =
+    if versionAtLeast mysql.mysqlVersion "5.7" then
+      "${mysql}/bin/mysqld --initialize-insecure ${mysqldOptions}"
+    else
+      "${pkgs.perl}/bin/perl ${mysql}/bin/mysql_install_db ${mysqldOptions}";
 in
 
 {
-
   ###### interface
 
   options = {
-
     services.percona = {
 
       enable = mkOption {
@@ -67,7 +74,8 @@ in
       };
 
       dataDir = mkOption {
-        default = "/var/mysql"; # !!! should be /var/db/mysql
+        # should be /var/db/mysql, but keep compatibility to upstream default
+        default = "/var/mysql";
         description = "Location where MySQL stores its table files";
       };
 
@@ -94,7 +102,10 @@ in
 
       initialDatabases = mkOption {
         default = [];
-        description = "List of database names and their initial schemas that should be used to create databases on the first startup of MySQL";
+        description = ''
+          List of database names and their initial schemas that should be used
+          to create databases on the first startup of MySQL
+        '';
         example = [
           { name = "foodatabase"; schema = literalExample "./foodatabase.sql"; }
           { name = "bardatabase"; schema = literalExample "./bardatabase.sql"; }
@@ -103,24 +114,37 @@ in
 
       initialScript = mkOption {
         default = null;
-        description = "A file containing SQL statements to be executed on the first startup. Can be used for granting certain permissions on the database";
+        description = ''
+          A file containing SQL statements to be executed on the first startup.
+          Can be used for granting certain permissions on the database
+        '';
       };
 
       # FIXME: remove this option; it's a really bad idea.
       rootPassword = mkOption {
         default = null;
-        description = "Path to a file containing the root password, modified on the first startup. Not specifying a root password will leave the root password empty.";
+        description = ''
+          Path to a file containing the root password, modified on the first
+          startup. Not specifying a root password will leave the root password
+          empty.
+        '';
       };
 
       replication = {
         role = mkOption {
           default = "none";
-          description = "Role of the MySQL server instance. Can be either: master, slave or none";
+          description = ''
+            Role of the MySQL server instance. Can be either: master, slave or
+            none
+          '';
         };
 
         serverId = mkOption {
           default = 1;
-          description = "Id of the MySQL server instance. This number must be unique for each instance";
+          description = ''
+            Id of the MySQL server instance. This number must be unique for each
+            instance
+          '';
         };
 
         masterHost = mkOption {
@@ -159,102 +183,96 @@ in
 
     environment.systemPackages = [ mysql ];
 
-    systemd.services.mysql =
-      { description = "MySQL Server";
+    systemd.services.mysql = {
+      description = "MySQL Server";
+      wantedBy = [ "multi-user.target" ];
+      unitConfig.RequiresMountsFor = "${cfg.dataDir}";
+      preStart =
+        ''
+          if ! test -e ${cfg.dataDir}/mysql; then
+              mkdir -m 0700 -p ${cfg.dataDir}
+              chown -R ${cfg.user} ${cfg.dataDir}
+              ${mysqlInit}
+              touch /run/mysql_init
+          fi
 
-        wantedBy = [ "multi-user.target" ];
+          mkdir -m 0755 -p ${cfg.pidDir}
+          chown -R ${cfg.user} ${cfg.pidDir}
 
-        unitConfig.RequiresMountsFor = "${cfg.dataDir}";
+          # Make the socket directory
+          mkdir -p /run/mysqld
+          chmod 0755 /run/mysqld
+          chown -R ${cfg.user} /run/mysqld
+        '';
+      serviceConfig.ExecStart = "${mysql}/bin/mysqld --defaults-extra-file=${myCnf} ${mysqldOptions}";
+      serviceConfig.TimeoutSec = 300;
+      postStart =
+        ''
+          # Wait until the MySQL server is available for use
+          count=0
+          while [ ! -e /run/mysqld/mysqld.sock ]
+          do
+              if [ $count -eq 60 ]
+              then
+                  echo "Tried 60 times, giving up..."
+                  exit 1
+              fi
 
-        preStart =
-          ''
-            if ! test -e ${cfg.dataDir}/mysql; then
-                mkdir -m 0700 -p ${cfg.dataDir}
-                chown -R ${cfg.user} ${cfg.dataDir}
-                ${mysql}/bin/mysqld --initialize-insecure ${mysqldOptions}
-                touch /tmp/mysql_init
-            fi
+              echo "MySQL daemon not yet started after $count s. Waiting..."
+              count=$((count++))
+              sleep 3
+          done
 
-            mkdir -m 0755 -p ${cfg.pidDir}
-            chown -R ${cfg.user} ${cfg.pidDir}
+          if [ -f /run/mysql_init ]
+          then
+              ${concatMapStrings (database:
+                ''
+                  # Create initial databases
+                  if ! test -e "${cfg.dataDir}/${database.name}"; then
+                      echo "Creating initial database: ${database.name}"
+                      ( echo "create database ${database.name};"
+                        echo "use ${database.name};"
 
-            # Make the socket directory
-            mkdir -p /run/mysqld
-            chmod 0755 /run/mysqld
-            chown -R ${cfg.user} /run/mysqld
-          '';
+                        if [ -f "${database.schema}" ]
+                        then
+                            cat ${database.schema}
+                        elif [ -d "${database.schema}" ]
+                        then
+                            cat ${database.schema}/mysql-databases/*.sql
+                        fi
+                      ) | ${mysql}/bin/mysql -u root -N
+                  fi
+                '') cfg.initialDatabases}
 
-        serviceConfig.ExecStart = "${mysql}/bin/mysqld --defaults-extra-file=${myCnf} ${mysqldOptions}";
+              ${optionalString (cfg.replication.role == "slave" && atLeast55)
+                ''
+                  # Set up the replication master
 
-        postStart =
-          ''
-            # Wait until the MySQL server is available for use
-            count=0
-            while [ ! -e /run/mysqld/mysqld.sock ]
-            do
-                if [ $count -eq 30 ]
-                then
-                    echo "Tried 30 times, giving up..."
-                    exit 1
-                fi
+                  ( echo "stop slave;"
+                    echo "change master to master_host='${cfg.replication.masterHost}', master_user='${cfg.replication.masterUser}', master_password='${cfg.replication.masterPassword}';"
+                    echo "start slave;"
+                  ) | ${mysql}/bin/mysql -u root -N
+                ''}
 
-                echo "MySQL daemon not yet started. Waiting for 1 second..."
-                count=$((count++))
-                sleep 1
-            done
+              ${optionalString (cfg.initialScript != null)
+                ''
+                  # Execute initial script
+                  cat ${cfg.initialScript} | ${mysql}/bin/mysql -u root -N
+                ''}
 
-            if [ -f /tmp/mysql_init ]
-            then
-                ${concatMapStrings (database:
-                  ''
-                    # Create initial databases
-                    if ! test -e "${cfg.dataDir}/${database.name}"; then
-                        echo "Creating initial database: ${database.name}"
-                        ( echo "create database ${database.name};"
-                          echo "use ${database.name};"
+              ${optionalString (cfg.rootPassword != null)
+                ''
+                  # Change root password
 
-                          if [ -f "${database.schema}" ]
-                          then
-                              cat ${database.schema}
-                          elif [ -d "${database.schema}" ]
-                          then
-                              cat ${database.schema}/mysql-databases/*.sql
-                          fi
-                        ) | ${mysql}/bin/mysql -u root -N
-                    fi
-                  '') cfg.initialDatabases}
+                  ( echo "use mysql;"
+                    echo "update user set authentication_string=password('$(cat ${cfg.rootPassword})') where User='root';"
+                    echo "flush privileges;"
+                  ) | ${mysql}/bin/mysql -u root -N
+                ''}
 
-                ${optionalString (cfg.replication.role == "slave" && atLeast55)
-                  ''
-                    # Set up the replication master
-
-                    ( echo "stop slave;"
-                      echo "change master to master_host='${cfg.replication.masterHost}', master_user='${cfg.replication.masterUser}', master_password='${cfg.replication.masterPassword}';"
-                      echo "start slave;"
-                    ) | ${mysql}/bin/mysql -u root -N
-                  ''}
-
-                ${optionalString (cfg.initialScript != null)
-                  ''
-                    # Execute initial script
-                    cat ${cfg.initialScript} | ${mysql}/bin/mysql -u root -N
-                  ''}
-
-                ${optionalString (cfg.rootPassword != null)
-                  ''
-                    # Change root password
-
-                    ( echo "use mysql;"
-                      echo "update user set authentication_string=password('$(cat ${cfg.rootPassword})') where User='root';"
-                      echo "flush privileges;"
-                    ) | ${mysql}/bin/mysql -u root -N
-                  ''}
-
-              rm /tmp/mysql_init
-            fi
-          ''; # */
+            rm /run/mysql_init
+          fi
+        '';  # */
       };
-
   };
-
 }

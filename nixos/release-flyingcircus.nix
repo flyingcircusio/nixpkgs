@@ -92,12 +92,22 @@ in rec {
         simple;
 
       flyingcircus = {
-            percona = hydraJob
+            percona-57 = hydraJob
               (import modules/flyingcircus/tests/percona.nix {
-                  inherit system; });
+                  percona = pkgs.callPackage
+                    ./modules/flyingcircus/packages/percona/5.7.nix { };
+                  inherit system; }
+            );
+            percona-56 = hydraJob
+              (import modules/flyingcircus/tests/percona.nix {
+                  percona = pkgs.callPackage
+                    ./modules/flyingcircus/packages/percona/5.6.nix { };
+                  inherit system; }
+            );
             sensuserver = hydraJob
               (import modules/flyingcircus/tests/sensu.nix {
-                  inherit system; });
+                  inherit system; }
+            );
       };
 
       networking.scripted = {
@@ -172,5 +182,4 @@ in rec {
       ]
       ++ lib.collect lib.isDerivation nixos;
   });
-
 }

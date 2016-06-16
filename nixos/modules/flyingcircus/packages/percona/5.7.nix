@@ -53,10 +53,13 @@ stdenv.mkDerivation rec {
     rm $out/share/man/man1/mysql-test-run.pl.1
   '';
 
-  passthru.mysqlVersion = "5.5";
+  passthru.mysqlVersion = "5.7";
 
   meta = {
     homepage = http://www.percona.com/;
-    description = "Is a free, fully compatible, enhanced, open source drop-in replacement for MySQL® that provides superior performance, scalability and instrumentation. ";
+    description = ''
+      Is a free, fully compatible, enhanced, open source drop-in replacement for
+      MySQL® that provides superior performance, scalability and instrumentation.
+    '';
   };
 }

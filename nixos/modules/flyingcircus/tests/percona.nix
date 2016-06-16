@@ -1,6 +1,9 @@
 # This test has been broken but still signaled "green" earlier on.
 # I have disabled it for now.
-import <nixpkgs/nixos/tests/make-test.nix> ({ pkgs, ...} : {
+import <nixpkgs/nixos/tests/make-test.nix> ({
+    pkgs
+    ,percona
+    ,...} : {
   name = "percona";
   meta = with pkgs.stdenv.lib.maintainers; {
     maintainers = [ theuni ];
@@ -19,6 +22,7 @@ import <nixpkgs/nixos/tests/make-test.nix> ({ pkgs, ...} : {
 
         flyingcircus.ssl.generate_dhparams = false;
         flyingcircus.roles.mysql.enable = true;
+        flyingcircus.roles.mysql.package = percona;
 
         # Tune those arguments as we'd like to run this on Hydra
         # in a rather small VM.
