@@ -232,15 +232,32 @@ in
     networking.firewall.rejectPackets = true;
     networking.firewall.extraCommands =
       let
-        addrs = map (elem: elem.ip) cfg.enc_addresses.srv;
-        rules = lib.optionalString
-          (lib.hasAttr "ethsrv" networking.interfaces)
-          (lib.concatMapStrings (a: ''
-            ${iptables a} -A nixos-fw -i ethsrv -s ${fclib.stripNetmask a
-              } -j nixos-fw-accept
-            '')
+        addrs_srv = map (elem: elem.ip) cfg.enc_addresses.srv;
+        addrs_fe = map (elem: elem.ip) cfg.enc_addresses.fe;
+        rule = eth: a: ''
+          ${iptables a} -A nixos-fw -i ${eth} -s ${fclib.stripNetmask a
+            } -j nixos-fw-accept
+        '';
+        rules_for = eth: addrs:
+          (lib.concatMapStrings
+            (rule eth)
             addrs);
-      in "# Accept traffic within the same resource group.\n${rules}";
+        rules_srv = lib.optionalString
+          (lib.hasAttr "ethsrv" networking.interfaces)
+          (rules_for "ethsrv" addrs_srv);
+        rules_fe = lib.optionalString
+          (lib.hasAttr "ethfe" networking.interfaces)
+          (rules_for "ethfe" addrs_fe);
+        rules_srv_to_fe = lib.optionalString
+          (lib.hasAttr "ethfe" networking.interfaces)
+          (rules_for "ethfe" addrs_srv);
+      in ''
+        # Accept traffic within the same resource group.
+        ${rules_srv}
+        ${rules_fe}
+        # Accept traffic from other SRV to our FE
+        ${rules_srv_to_fe}
+      '';
 
     # DHCP settings: never use implicitly, never do IPv4ll
     networking.useDHCP = false;

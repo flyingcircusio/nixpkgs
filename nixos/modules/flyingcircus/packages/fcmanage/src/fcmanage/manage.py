@@ -132,6 +132,8 @@ def update_inventory():
         (lambda: directory.lookup_node(enc['name']), 'enc.json'),
         (lambda: directory.list_nodes_addresses(
             enc['parameters']['location'], 'srv'), 'addresses_srv.json'),
+        (lambda: directory.list_nodes_addresses(
+            enc['parameters']['location'], 'fe'), 'addresses_fe.json'),
         (lambda: directory.list_permissions(), 'permissions.json'),
         (lambda: directory.list_service_clients(), 'service_clients.json'),
         (lambda: directory.list_services(), 'services.json'),

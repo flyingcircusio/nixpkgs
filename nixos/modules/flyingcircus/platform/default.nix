@@ -23,6 +23,7 @@ let
     (get_json /etc/nixos/enc.json {});
 
   enc_addresses.srv = get_json cfg.enc_addresses_path.srv [];
+  enc_addresses.fe = get_json cfg.enc_addresses_path.fe [];
 
   enc_services = get_json cfg.enc_services_path [];
 
@@ -81,6 +82,27 @@ in
 
     flyingcircus.enc_addresses_path.srv = mkOption {
       default = /etc/nixos/addresses_srv.json;
+      type = types.path;
+      description = "Where to find the address list json file.";
+    };
+
+    flyingcircus.enc_addresses.fe = mkOption {
+      default = enc_addresses.fe;
+      type = types.listOf types.attrs;
+      description = "List of addresses of machines in the neighbourhood.";
+      example = [ {
+        ip = "2a02:238:f030:1c3::104c/64";
+        mac = "02:00:00:03:11:b1";
+        name = "test03";
+        rg = "test";
+        rg_parent = "";
+        ring = 1;
+        vlan = "fe";
+      } ];
+    };
+
+    flyingcircus.enc_addresses_path.fe = mkOption {
+      default = /etc/nixos/addresses_fe.json;
       type = types.path;
       description = "Where to find the address list json file.";
     };
