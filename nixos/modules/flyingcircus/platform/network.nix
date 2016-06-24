@@ -249,8 +249,8 @@ in
           (lib.hasAttr "ethfe" networking.interfaces)
           (rules_for "ethfe" addrs_fe);
         rules_srv_to_fe = lib.optionalString
-          (lib.hasAttr "ethsrv" networking.interfaces)
-          (rules_for "ethsrv" addrs_fe);
+          (lib.hasAttr "ethfe" networking.interfaces)
+          (rules_for "ethfe" addrs_srv);
       in ''
         # Accept traffic within the same resource group.
         ${rules_srv}
