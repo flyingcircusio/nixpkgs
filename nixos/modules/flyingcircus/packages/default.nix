@@ -6,35 +6,38 @@
     ./percona
   ];
 
-  nixpkgs.config.packageOverrides = pkgs: rec {
+  nixpkgs.config.packageOverrides = pkgs: with pkgs; rec {
 
-    boost159 = pkgs.callPackage ./boost-1.59.nix { };
 
-    cron = pkgs.callPackage ./cron.nix { };
+    boost159 = callPackage ./boost-1.59.nix { };
 
-    easyrsa3 = pkgs.callPackage ./easyrsa { };
+    cron = callPackage ./cron.nix { };
 
-    fcmaintenance = pkgs.callPackage ./fcmaintenance { };
-    fcmanage = pkgs.callPackage ./fcmanage { };
-    fcsensuplugins = pkgs.callPackage ./fcsensuplugins { };
-    fcutil = pkgs.callPackage ./fcutil { };
+    easyrsa3 = callPackage ./easyrsa { };
 
-    nagiosplugin = pkgs.callPackage ./nagiosplugin.nix { };
+    fcmaintenance = callPackage ./fcmaintenance { };
+    fcmanage = callPackage ./fcmanage { };
+    fcsensuplugins = callPackage ./fcsensuplugins { };
+    fcutil = callPackage ./fcutil { };
 
-    powerdns = pkgs.callPackage ./powerdns.nix { };
-    pypkgs = pkgs.callPackage ./pypkgs.nix { };
+    nagiosplugin = callPackage ./nagiosplugin.nix { };
 
-    qemu = pkgs.callPackage ./qemu-2.5.nix {
-      inherit (pkgs.darwin.apple_sdk.frameworks) CoreServices Cocoa;
+    powerdns = callPackage ./powerdns.nix { };
+    pypkgs = callPackage ./pypkgs.nix { };
+
+    qemu = callPackage ./qemu-2.5.nix {
+      inherit (darwin.apple_sdk.frameworks) CoreServices Cocoa;
       x86Only = true;
     };
 
-    sensu = pkgs.callPackage ./sensu { };
-    uchiwa = pkgs.callPackage ./uchiwa { };
+    sensu = callPackage ./sensu { };
+    uchiwa = callPackage ./uchiwa { };
 
-    mc = pkgs.callPackage ./mc.nix { };
+    mc = callPackage ./mc.nix { };
 
-    osm2pgsql = pkgs.callPackage ./osm2pgsql.nix { };
+    osm2pgsql = callPackage ./osm2pgsql.nix { };
+
+    vulnix = import (builtins.fetchTarball https://github.com/flyingcircusio/vulnix/archive/v1.0.tar.gz) { };
 
     mongodb32 = pkgs.callPackage ./mongodb {
       # I overwrite this here and not in mongodb/default.nix as it is copied

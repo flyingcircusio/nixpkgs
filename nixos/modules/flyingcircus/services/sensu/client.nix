@@ -251,6 +251,13 @@ in {
         '';
         interval = 600;
       };
+      security = {
+        notification = "Vulnerabilities found.";
+        command = ''
+          ${pkgs.vulnix}/bin/vulnix -m http://downloads.fcio.net/nvd/ --system
+        '';
+        interval = 3600;
+      };
       manage = {
         notification = "The FC manage job is not enabled.";
         command = "${check_timer} fc-manage";
