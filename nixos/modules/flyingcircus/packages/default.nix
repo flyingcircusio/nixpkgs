@@ -38,5 +38,6 @@
     sensu = pkgs.callPackage ./sensu { };
     uchiwa = pkgs.callPackage ./uchiwa { };
 
+    vulnix = import ./vulnix.nix { };
   };
 }
