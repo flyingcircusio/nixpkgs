@@ -2,10 +2,10 @@
 
 let
   vulnix = pkgs.fetchFromGitHub {
-    rev = "f15f8acd0b5410f6dc55dea60179918108def9a0";
+    rev = "bbc962fb0e1a3beec9eaa3198441f2e82e6ee418";
     owner = "flyingcircusio";
     repo = "vulnix";
-    sha256 = "1z6x8i93n8zg2wsws0ik7h4qbl5mr31dh0cxisnqv6rq79s6j1vp";
+    sha256 = "196mzbhvdmx7qmw8nc7yhhzdjz8mm4ir84lpr4lllxads7c81h8l";
   };
 in
 import vulnix { inherit pkgs; }
