@@ -3,7 +3,13 @@
 {
   config = {
 
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs;
+    let gnupg_nox11 = lib.overrideDerivation gnupg (attrs: {
+        doCheck = false;
+        x11Support = false;
+    });
+    in
+    [
         apacheHttpd
         atop
         bc
@@ -19,7 +25,7 @@
         gcc
         gdbm
         git
-        (gnupg.override { x11Support = false; })
+        gnupg_nox11
         go
         gptfdisk
         graphviz
