@@ -19,7 +19,7 @@
         gcc
         gdbm
         git
-        gnupg
+        (gnupg.override { x11Support = false; })
         go
         gptfdisk
         graphviz
