@@ -17,7 +17,9 @@ stdenv.mkDerivation rec {
     sha256 = "1338hj1h3sh34897120y30x12b64wyj3xjzzk5asm2hdzhxgsmva";
   };
 
-  buildInputs = [ libgpgerror libassuan libcap gtk2 ncurses qt4 ];
+  buildInputs = [ libgpgerror libassuan libcap ncurses ]
+                ++ optional (gtk2 != null) gtk2
+                ++ optional (qt4 != null) qt4;
 
   prePatch = ''
     substituteInPlace pinentry/pinentry-curses.c --replace ncursesw ncurses

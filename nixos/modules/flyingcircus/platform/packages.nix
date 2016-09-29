@@ -4,11 +4,6 @@
   config = {
 
     environment.systemPackages = with pkgs;
-    let gnupg_nox11 = lib.overrideDerivation gnupg (attrs: {
-        doCheck = false;
-        x11Support = false;
-    });
-    in
     [
         apacheHttpd
         atop
@@ -25,7 +20,13 @@
         gcc
         gdbm
         git
-        gnupg_nox11
+        (gnupg.override{
+          x11Support = false;
+          pinentry = pkgs.pinentry.override {
+            gtk2 = null;
+            qt4 = null;
+          };
+        })
         go
         gptfdisk
         graphviz
