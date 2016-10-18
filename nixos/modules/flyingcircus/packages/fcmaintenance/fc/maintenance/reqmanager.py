@@ -2,15 +2,15 @@
 
 from .request import Request
 from .state import State, ARCHIVE
-
 import argparse
-import fcntl
 import fc.util.directory
+import fcntl
 import glob
 import json
 import logging
 import os
 import os.path as p
+import socket
 
 LOG = logging.getLogger(__name__)
 DEFAULT_DIR = '/var/spool/maintenance'
@@ -161,6 +161,7 @@ class ReqManager:
                 requests.append(request)
         yield from sorted(requests)
 
+    @require_directory
     @require_lock
     def execute(self):
         """Process maintenance requests.
@@ -169,18 +170,26 @@ class ReqManager:
         After that, select the oldest due request as next active request.
         """
         LOG.debug('executing maintenance requests')
-        for req in self.runnable():
-            LOG.info('(req %s) starting execution', req.id)
-            try:
-                req.execute()
-            except Exception:
-                LOG.exception('(req %s) error during execution', req.id)
-                req.state = State.error
-            try:
-                req.save()
-            except Exception:
-                pass
-            LOG.debug('(req %s) executed, state %s', req.id, req.state)
+        hostname = socket.gethostname()
+        set_maintenance = False
+        try:
+            for req in self.runnable():
+                LOG.info('(req %s) starting execution', req.id)
+                if not set_maintenance:
+                    self.directory.mark_node_service_status(hostname, False)
+                    set_maintenance = True
+                try:
+                    req.execute()
+                except Exception:
+                    LOG.exception('(req %s) error during execution', req.id)
+                    req.state = State.error
+                try:
+                    req.save()
+                except Exception:
+                    pass
+                LOG.debug('(req %s) executed, state %s', req.id, req.state)
+        finally:
+            self.directory.mark_node_service_status(hostname, True)
 
     @require_lock
     @require_directory

@@ -52,6 +52,7 @@ setup(
     cmdclass={'test': PyTest},
     extras_require={
         'dev': test_req + ['pytest-cov'],
+        'test': test_req,
     },
     zip_safe=False,
     entry_points={
