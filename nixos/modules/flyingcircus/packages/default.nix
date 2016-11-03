@@ -52,5 +52,10 @@
       pkgs.callPackage ./elasticsearch/plugins.nix { }
     );
 
+    nodejs6 = pkgs.callPackage ./nodejs6/default.nix {
+      libuv = pkgs.libuvVersions.v1_9_1;
+      openssl = pkgs.openssl_1_0_2;
+    };
+
   };
 }

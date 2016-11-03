@@ -195,6 +195,10 @@ in rec {
       postfix = pkgs.callPackage ./modules/flyingcircus/packages/postfix/3.0.nix { };
       powerdns = pkgs.callPackage ./modules/flyingcircus/packages/powerdns.nix { };
 
+      nodejs6 = pkgs.callPackage ./nodejs6/default.nix {
+        libuv = pkgs.libuvVersions.v1_9_1;
+        openssl = pkgs.openssl_1_0_2;
+      };
   };
 
   tested = lib.hydraJob (pkgs.releaseTools.aggregate {
