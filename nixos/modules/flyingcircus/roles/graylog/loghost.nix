@@ -116,6 +116,8 @@ in
       	enable = true;
   	    elasticsearchClusterName = "graylog";
         inherit passwordSecret rootPasswordSha2 webListenUri restListenUri;
+        elasticsearchDiscoveryZenPingUnicastHosts =
+          "${config.networking.hostName}.${config.networking.domain}:9300";
         # ipv6 would be nice too
   	    extraConfig = ''
           trusted_proxies 195.62.125.243/32, 195.62.125.11/32, 172.22.49.56/32
