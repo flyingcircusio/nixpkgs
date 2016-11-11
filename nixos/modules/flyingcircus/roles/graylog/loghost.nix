@@ -65,6 +65,8 @@ let
         "echo -n $text | sha256sum | cut -f1 -d \" \" > $out")
       );
 
+  syslogPort = 5140;
+
 in
 {
 
@@ -150,7 +152,7 @@ in
                recv_buffer_size = 262144;
                store_full_message =  false;
                allow_override_date =  true;
-               port = 10514;
+               port = syslogPort;
              };
              title = "Syslog UDP"; # be careful changing it, it's used as
                                    # a primary key for identifying the config
@@ -170,7 +172,7 @@ in
     })
     (mkIf (loghostService != null) {
       services.rsyslogd.extraConfig = ''
-        *.* @${loghostService.address}:5140;RSYSLOG_SyslogProtocol23Format
+        *.* @${loghostService.address}:${toString syslogPort};RSYSLOG_SyslogProtocol23Format
       '';
     }
     )];
