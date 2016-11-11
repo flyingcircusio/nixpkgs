@@ -146,7 +146,7 @@ in
            user = "admin";
            pw = rootPassword;
 
-           data_body = {
+           input_body = {
              configuration = {
                bind_address = "0.0.0.0";
                expand_structured_data = false;
@@ -162,12 +162,20 @@ in
              type = "org.graylog2.inputs.syslog.udp.SyslogUDPInput";
              global = false;
            };
+          sso_body = {
+            default_group = "Admin";
+            auto_create_user = true;
+            username_header = "Remote-User";
+            require_trusted_proxies = true;
+            trusted_proxies = "95.62.125.11/32, 195.62.125.243/32, 172.22.49.56/32";
+          };
         in
           ''${pkgs.fcmanage}/bin/fc-graylog \
           -u '${user}' \
           -p '${removeSuffix "\n" pw}' \
           '${api}' \
-          '${builtins.toJSON data_body}'
+          '${builtins.toJSON input_body}' \
+          '${builtins.toJSON sso_body}'
           '' ;
       };
 

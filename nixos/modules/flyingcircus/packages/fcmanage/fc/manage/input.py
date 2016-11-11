@@ -31,7 +31,8 @@ import requests
 @click.option('-p', '--password', default='admin', show_default=True)
 @click.argument('api')
 @click.argument('input_conf')
-def cli(user, password, api, input_conf):
+@click.argument('sso_conf')
+def cli(user, password, api, input_conf, sso_conf):
     """Configure a Graylog input node."""
     s = requests.Session()
     s.auth = (user, password)
@@ -50,7 +51,13 @@ def cli(user, password, api, input_conf):
     # create input for UDP
     r = s.post(api + '/system/inputs', json=data)
     r.raise_for_status()
-    return r.json()['id']
+    # return r.json()['id']
+
+    # autoconfigure sso-plugin
+    data = json.loads(sso_conf)
+    r = s.post(api + '/plugins/org.graylog.plugins.auth.sso/config', json=data)
+    r.raise_for_status()
+
 
 if __name__ == '__main__':
     cli()
