@@ -103,8 +103,8 @@ in
   config = mkMerge [
     (mkIf cfg.enable {
 
-      # XXX Access should *onl* be allowed from directory and same-rg.
-    	networking.firewall.allowedTCPPorts = [ 9000 ];
+      # XXX Access should *only* be allowed from directory and same-rg.
+      networking.firewall.allowedTCPPorts = [ 9000 ];
 
       system.activationScripts.fcio-loghost =
         stringAfter
@@ -113,18 +113,18 @@ in
            passwordActivation passwordSecretFile passwordSecret serviceUser);
 
       services.graylog = {
-      	enable = true;
-  	    elasticsearchClusterName = "graylog";
+        enable = true;
+        elasticsearchClusterName = "graylog";
         inherit passwordSecret rootPasswordSha2 webListenUri restListenUri;
         elasticsearchDiscoveryZenPingUnicastHosts =
           "${config.networking.hostName}.${config.networking.domain}:9300";
         # ipv6 would be nice too
-  	    extraConfig = ''
+        extraConfig = ''
           trusted_proxies 195.62.125.243/32, 195.62.125.11/32, 172.22.49.56/32
-  	    '';
-    	};
+        '';
+      };
 
-    	flyingcircus.roles.mongodb.enable = true;
+      flyingcircus.roles.mongodb.enable = true;
       flyingcircus.roles.elasticsearch = {
         enable = true;
         dataDir = "/var/lib/elasticsearch";
