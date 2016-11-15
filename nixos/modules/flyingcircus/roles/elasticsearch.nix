@@ -65,7 +65,7 @@ in
       };
 
       esNodes = mkOption {
-        type = types.listOf types.string;
+        type = types.nullOr (types.listOf types.string);
         default = null;
       };
     };
