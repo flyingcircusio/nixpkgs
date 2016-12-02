@@ -158,6 +158,9 @@ in
       uchiwa = 31003;
       sensuclient = 31004;
       powerdns = 31005;
+
+      # Upstream services from a future release
+      graylog = 243;
     };
 
     ids.gids = {

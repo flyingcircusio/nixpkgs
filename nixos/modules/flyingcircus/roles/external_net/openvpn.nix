@@ -74,7 +74,7 @@ let
   # the pushed routes.
   pushNameservers = lib.concatMapStringsSep "\n"
     (a: "push \"dhcp-option DNS ${a}\"")
-    (fclib.listenAddresses config "ethfe");
+    (lib.attrByPath [ (toString location) ] "" cfg.static.nameservers);
 
   #
   # management & monitoring

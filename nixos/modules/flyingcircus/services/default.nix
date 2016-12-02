@@ -3,7 +3,9 @@
 {
   imports =
     [
+     ./elasticsearch2.nix
      ./fcmanage.nix
+     ./graylog.nix
      ./influxdb011.nix
      ./percona.nix
      ./powerdns.nix

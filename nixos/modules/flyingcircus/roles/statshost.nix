@@ -148,8 +148,16 @@ in
         }
       '';
 
-    networking.firewall.allowedTCPPorts = [ 80 443 2003 8083 8086 ];
-    networking.firewall.allowedUDPPorts = [ 2003 ];
+    networking.firewall.extraCommands = ''
+      # Allow access to stats host on FE interface.
+      ip46tables -A nixos-fw -p tcp --dport 80 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p tcp --dport 443 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p tcp --dport 2003 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p udp --dport 2003 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p tcp --dport 8083 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p tcp --dport 8086 -i ethfe -j nixos-fw-accept
+    '';
+
   };
 }
 

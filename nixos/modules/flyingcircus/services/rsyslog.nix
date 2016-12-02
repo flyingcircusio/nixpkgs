@@ -9,6 +9,14 @@
       description = "";
       type = attrs;
     };
+    flyingcircus.syslog.extraRules = lib.mkOption {
+      default = "";
+      example = ''
+        *.* @graylog.example.org:514
+      '';
+      description = "custom extra rules for syslog";
+      type = string;
+    };
   };
 
   config =
@@ -16,11 +24,12 @@
     exclude = lib.concatMapStrings
       (facility: ";${facility}.none")
       (builtins.attrNames config.flyingcircus.syslog.separateFacilities);
-    extraRules = lib.concatStrings (lib.mapAttrsToList
+    separateFacilities = lib.concatStrings (lib.mapAttrsToList
       (facility: file: "${facility}.info -${file}\n")
       config.flyingcircus.syslog.separateFacilities);
     extraLogFiles = lib.concatStringsSep " "
       (builtins.attrValues config.flyingcircus.syslog.separateFacilities);
+    extraRules = config.flyingcircus.syslog.extraRules;
   in
   {
     services.rsyslogd.enable = true;
@@ -49,6 +58,7 @@
     services.rsyslogd.extraConfig = ''
       *.info${exclude} -/var/log/messages
       ${extraRules}
+      ${separateFacilities}
     '';
 
     services.logrotate.config = ''

@@ -161,8 +161,11 @@ in
     services.nginx.config = "";
     services.nginx.appendConfig = baseConfig;
 
-    # XXX only on FE!
-    networking.firewall.allowedTCPPorts = [ 80 443 ];
+    networking.firewall.extraCommands = ''
+      # Allow access to installed nginx on FE interface.
+      ip46tables -A nixos-fw -p tcp --dport 80 -i ethfe -j nixos-fw-accept
+      ip46tables -A nixos-fw -p tcp --dport 443 -i ethfe -j nixos-fw-accept
+    '';
 
     system.activationScripts.nginx = ''
       install -d -o ${toString config.ids.uids.nginx} /var/log/nginx

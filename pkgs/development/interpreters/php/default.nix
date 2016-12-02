@@ -97,20 +97,20 @@ let
         };
 
         mysql = {
-          configureFlags = ["--with-mysql=${mysql.lib}"];
+          configureFlags = ["--with-mysql=mysqlnd"];
           buildInputs = [ mysql.lib ];
         };
 
         mysqli = {
-          configureFlags = ["--with-mysqli=${mysql.lib}/bin/mysql_config"];
+          configureFlags = ["--with-mysqli=mysqlnd"];
           buildInputs = [ mysql.lib ];
         };
 
-        mysqli_embedded = {
-          configureFlags = ["--enable-embedded-mysqli"];
-          depends = "mysqli";
-          assertion = fixed.mysqliSupport;
-        };
+        # mysqli_embedded = {
+        #   configureFlags = ["--enable-embedded-mysqli"];
+        #   depends = "mysqli";
+        #   assertion = fixed.mysqliSupport;
+        # };
 
         pdo_mysql = {
           configureFlags = ["--with-pdo-mysql=${mysql.lib}"];

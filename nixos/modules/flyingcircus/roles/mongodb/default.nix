@@ -53,6 +53,10 @@ in
 
   config = mkIf cfg.roles.mongodb.enable {
 
+    environment.systemPackages = [
+      pkgs.mongodb-tools
+    ];
+
     services.mongodb.enable = true;
     services.mongodb.dbpath = "/srv/mongodb";
     services.mongodb.bind_ip = concatStringsSep "," listen_addresses;

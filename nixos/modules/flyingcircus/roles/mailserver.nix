@@ -39,6 +39,9 @@ in
         description = ''
           Enable the Flying Circus mailserver out role and configure
           mailout on all nodes in this RG/location.
+
+          Note: you still need to manually set "myhostname" and make proper
+          DNS settings.
         '';
       };
 

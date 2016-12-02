@@ -3,12 +3,14 @@
 with lib;
 
 let
-  cfg = config.services.elasticsearch;
+  cfg = config.services.elasticsearch2;
 
   esConfig = ''
-    network.host: ${cfg.host}
+    network.host: ${cfg.listenAddress}
     network.port: ${toString cfg.port}
     network.tcp.port: ${toString cfg.tcp_port}
+    # TODO: find a way to enable security manager
+    security.manager.enabled: false
     cluster.name: ${cfg.cluster_name}
     ${cfg.extraConf}
   '';
@@ -30,14 +32,14 @@ in {
 
   ###### interface
 
-  options.services.elasticsearch = {
+  options.services.elasticsearch2 = {
     enable = mkOption {
       description = "Whether to enable elasticsearch.";
       default = false;
       type = types.bool;
     };
 
-    host = mkOption {
+    listenAddress = mkOption {
       description = "Elasticsearch listen address.";
       default = "127.0.0.1";
       type = types.str;
@@ -117,40 +119,36 @@ in {
   ###### implementation
 
   config = mkIf cfg.enable {
-    systemd.services.elasticsearch = {
+    systemd.services.elasticsearch2 = {
       description = "Elasticsearch Daemon";
       wantedBy = [ "multi-user.target" ];
       after = [ "network-interfaces.target" ];
-      environment = { ES_HOME = cfg.dataDir; };
+      path = [ pkgs.inetutils ];
+      environment = {
+        ES_HOME = cfg.dataDir;
+      };
       serviceConfig = {
-        ExecStart = "${pkgs.elasticsearch}/bin/elasticsearch -Des.path.conf=${cfg.dataDir}/config -Des.path.scripts=${cfg.dataDir}/scripts ${toString cfg.extraCmdLineOptions}";
+        ExecStart = "${pkgs.elasticsearch2}/bin/elasticsearch -Des.path.conf=${configDir} ${toString cfg.extraCmdLineOptions}";
         User = "elasticsearch";
         PermissionsStartOnly = true;
       };
       preStart = ''
         mkdir -m 0700 -p ${cfg.dataDir}
-        if [ "$(id -u)" = 0 ]; then chown -R elasticsearch ${cfg.dataDir}; fi
 
         # Install plugins
-        rm ${cfg.dataDir}/plugins || true
-        ln -s ${esPlugins} ${cfg.dataDir}/plugins
-
-        # Install scripts
-        mkdir -p ${cfg.dataDir}/scripts
-
-        # Install config
-        rm -rf ${cfg.dataDir}/config || true
-        mkdir -p ${cfg.dataDir}/config
-        cp -L ${configDir}/* ${cfg.dataDir}/config/
+        ln -sfT ${esPlugins}/plugins ${cfg.dataDir}/plugins
+        ln -sfT ${pkgs.elasticsearch2}/lib ${cfg.dataDir}/lib
+        ln -sfT ${pkgs.elasticsearch2}/modules ${cfg.dataDir}/modules
+        if [ "$(id -u)" = 0 ]; then chown -R elasticsearch ${cfg.dataDir}; fi
       '';
       postStart = mkBefore ''
-        until ${pkgs.curl}/bin/curl -s -o /dev/null ${cfg.host}:${toString cfg.port}; do
+        until ${pkgs.curl}/bin/curl -s -o /dev/null ${cfg.listenAddress}:${toString cfg.port}; do
           sleep 1
         done
       '';
     };
 
-    environment.systemPackages = [ pkgs.elasticsearch ];
+    environment.systemPackages = [ pkgs.elasticsearch2 ];
 
     users.extraUsers = singleton {
       name = "elasticsearch";

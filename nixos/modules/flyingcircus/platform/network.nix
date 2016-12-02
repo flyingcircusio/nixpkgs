@@ -60,6 +60,7 @@ let
          (filter (a: fclib.isIp4 a.ip) enc_addresses));
 
 in
+
 {
   options = {
     flyingcircus.network.policyRouting = {

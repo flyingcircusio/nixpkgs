@@ -18,10 +18,13 @@ in
      ./compat.nix
      ./datadog.nix
      ./dovecot.nix
+     ./elasticsearch.nix
      ./external_net
      ./generic.nix
      ./haproxy.nix
      ./java.nix
+     ./loghost-client.nix
+     ./loghost.nix
      ./mailserver.nix
      ./mongodb
      ./mysql.nix

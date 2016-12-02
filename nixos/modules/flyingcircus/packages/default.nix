@@ -1,4 +1,4 @@
-{ ... }:
+{ lib, ... }:
 
 {
 
@@ -44,6 +44,7 @@
     mc = pkgs.callPackage ./mc.nix { };
     mailx = pkgs.callPackage ./mailx.nix { };
     mongodb32 = pkgs.callPackage ./mongodb { sasl = pkgs.cyrus_sasl; };
+    graylog = pkgs.callPackage ./graylog.nix { };
 
     nagiosplugin = pkgs.callPackage ./nagiosplugin.nix { };
 
@@ -65,6 +66,16 @@
 
     rabbitmq_delayed_message_exchange =
       pkgs.callPackage ./rabbitmq_delayed_message_exchange.nix { };
+
+    elasticsearch2 = pkgs.callPackage ./elasticsearch2 { };
+    elasticsearchPlugins = lib.recurseIntoAttrs (
+      pkgs.callPackage ./elasticsearch/plugins.nix { }
+    );
+
+    nodejs6 = pkgs.callPackage ./nodejs6/default.nix {
+      libuv = pkgs.libuvVersions.v1_9_1;
+      openssl = pkgs.openssl_1_0_2;
+    };
 
   };
 }

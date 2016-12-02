@@ -77,16 +77,13 @@ with lib;
     flyingcircus.static.ntpservers = {
       # Those are the routers and ceph mons. This needs to move to the
       # directory service discovery.
-      dev = [ "selma" "barney" "eddie" "sherri" "cartman02" "patty"];
-      rzob = [ "carme" "cartman07" "cartman11" "kenny00" "cartman12" "kenny01" "cartman10" "iocaste" "cartman13" "cartman08" "cartman06" ];
-      rzrl1 = [ "kyle04" "kenny03" "kenny02" "cartman04" "cartman05" ];
-      whq = [ "barbrady01" "cartman00" "kyle03" "terri" "edna" "hibbert" "bob" "lou" ];
+      dev = [ "selma" "barney" "eddie" ];
+      rzob = [ "kenny00" "kenny01" "cartman06" ];
+      rzrl1 = [ "kyle04" "kenny03" "kenny02" ];
+      whq = [ "barbrady01" "edna" "lou" ];
 
       # Location-independent NTP servers from the global public pool.
-      standalone = [ "0.pool.ntp.org"
-                     "1.pool.ntp.org"
-                     "2.pool.ntp.org"
-                     "3.pool.ntp.org"];
+      standalone = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
     };
 
     # Generally allow DHCP?
