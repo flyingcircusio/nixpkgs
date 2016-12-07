@@ -19,12 +19,12 @@ let
   generatedRootPassword = mkPassword "graylog.rootPassword";
   generatedPasswordSecret = mkPassword "graylog.passwordSecret";
 
-  rootPassword =
-    if cfg.rootPassword  == null
+  rootPassword = removeSuffix "\n"
+    (if cfg.rootPassword  == null
     then (fclib.configFromFile
             rootPasswordFile
             generatedRootPassword)
-    else cfg.rootPassword;
+    else cfg.rootPassword);
 
   rootPasswordSha2 = mkSha2 rootPassword;
 
@@ -178,6 +178,36 @@ in
           '${builtins.toJSON sso_body}'
           '' ;
       };
+
+      services.collectd.extraConfig = ''
+        LoadPlugin curl_json
+        <Plugin curl_json>
+          <URL "${restListenUri}/system/journal">
+            User "admin"
+            Password "${rootPassword}"
+            Header "Accept: application/json"
+            Instance "graylog"
+            <Key "uncommitted_journal_entries">
+              Type "gauge"
+            </Key>
+            <Key "append_events_per_second">
+              Type "gauge"
+            </Key>
+            <Key "read_events_per_second">
+              Type "gauge"
+            </Key>
+          </URL>
+          <URL "${restListenUri}/system/throughput">
+            User "admin"
+            Password "${rootPassword}"
+            Header "Accept: application/json"
+            Instance "graylog"
+            <Key "throughput">
+              Type "gauge"
+            </Key>
+        </URL>
+        </Plugin>
+      '';
 
     })
     (mkIf (loghostService != null) {
