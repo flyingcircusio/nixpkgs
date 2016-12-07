@@ -35,8 +35,10 @@ let
             generatedPasswordSecret)
     else cfg.passwordSecret;
 
-  webListenUri = "http://${listenOn}:9000/tools/${config.flyingcircus.enc.name}/graylog";
-  restListenUri = "http://${listenOn}:9000/tools/${config.flyingcircus.enc.name}/graylog/api";
+
+  port = 9000;
+  webListenUri = "http://${listenOn}:${toString port}/tools/${config.flyingcircus.enc.name}/graylog";
+  restListenUri = "http://${listenOn}:${toString port}/tools/${config.flyingcircus.enc.name}/graylog/api";
 
   # -- helper functions --
   passwordActivation = file: password: user:
@@ -104,7 +106,7 @@ in
     (mkIf cfg.enable {
 
       # XXX Access should *only* be allowed from directory and same-rg.
-      networking.firewall.allowedTCPPorts = [ 9000 ];
+      networking.firewall.allowedTCPPorts = [ port ];
 
       system.activationScripts.fcio-loghost =
         stringAfter
@@ -208,6 +210,16 @@ in
         </URL>
         </Plugin>
       '';
+
+    flyingcircus.services.sensu-client.checks = {
+      graylog_ui = {
+        notification = "Graylog UI alive";
+        command = ''
+          check_http -H ${listenOn} -p ${toString port} \
+            -u /tools/${config.networking.hostName}/graylog/
+        '';
+      };
+    };
 
     })
     (mkIf (loghostService != null) {
