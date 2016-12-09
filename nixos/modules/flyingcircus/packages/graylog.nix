@@ -15,6 +15,11 @@ stdenv.mkDerivation rec {
     sha256 ="1qraaf3pm2i7vhvrls9fspc6mxn9hf5n49298hza9rmhpc8izdzv";
   };
 
+  src_logstash = fetchurl {
+    url = "https://github.com/sivasamyk/graylog2-input-lumberjack/releases/download/v1.0.0/graylog2-input-lumberjack-1.0.0-rc1.jar";
+    sha256 = "1854pvqw2ffgy7bhkk5savybwlvhlasxdpl1yph87znsyinzfrmr";
+  };
+
   dontBuild = true;
   dontStrip = true;
 
@@ -22,6 +27,7 @@ stdenv.mkDerivation rec {
     mkdir -p $out
     cp -r {graylog.jar,lib,bin,plugin,data} $out
     cp ${src_sso.outPath} $out/plugin/
+    cp ${src_logstash.outPath} $out/plugin/
   '';
 
   meta = with stdenv.lib; {
