@@ -1,36 +1,56 @@
-diff -rupN a/bin/elasticsearch b/bin/elasticsearch
---- a/bin/elasticsearch	2015-08-05 17:52:05.740819671 +0200
-+++ b/bin/elasticsearch	2015-08-05 17:22:34.664657364 +0200
-@@ -83,7 +83,10 @@ while [ -h "$SCRIPT" ] ; do
+--- a/bin/elasticsearch 2016-09-23 07:07:21.734491135 +0000
++++ a/bin/elasticsearch 2016-09-23 07:07:39.418545158 +0000
+@@ -72,7 +72,11 @@
  done
- 
+
  # determine elasticsearch home
 -ES_HOME=`dirname "$SCRIPT"`/..
 +if [ -z "$ES_HOME" ]; then
 +    echo "You must set the ES_HOME var" >&2
 +    exit 1
 +fi
- 
++
+
  # make ELASTICSEARCH_HOME absolute
  ES_HOME=`cd "$ES_HOME"; pwd`
-diff -rupN a/bin/plugin b/bin/plugin
---- a/bin/plugin	2015-08-05 17:57:07.903088815 +0200
-+++ b/bin/plugin	2015-08-05 17:57:38.979808139 +0200
-@@ -16,7 +16,10 @@ while [ -h "$SCRIPT" ] ; do
+--- a/bin/plugin    2016-09-23 07:07:50.612963623 +0000
++++ a/bin/plugin    2016-09-23 07:08:29.724590508 +0000
+@@ -17,7 +17,10 @@
  done
- 
+
  # determine elasticsearch home
 -ES_HOME=`dirname "$SCRIPT"`/..
 +if [ -z "$ES_HOME" ]; then
 +    echo "You must set the ES_HOME var" >&2
 +    exit 1
 +fi
- 
+
  # make ELASTICSEARCH_HOME absolute
  ES_HOME=`cd "$ES_HOME"; pwd`
-@@ -45,4 +48,4 @@ while [ $# -gt 0 ]; do
-   shift
- done
- 
--exec "$JAVA" $JAVA_OPTS $ES_JAVA_OPTS -Xmx64m -Xms16m -Delasticsearch -Des.path.home="$ES_HOME" $properties -cp "$ES_HOME/lib/*" org.elasticsearch.plugins.PluginManager $args
-+exec "$JAVA" $JAVA_OPTS $ES_JAVA_OPTS -Xmx64m -Xms16m -Delasticsearch -Des.path.home="$ES_HOME" $properties -cp "$ES_CLASSPATH/lib/*" org.elasticsearch.plugins.PluginManager $args
+@@ -110,4 +113,4 @@
+ HOSTNAME=`hostname | cut -d. -f1`
+ export HOSTNAME
+
+-eval "$JAVA" -client -Delasticsearch -Des.path.home="\"$ES_HOME\"" $properties -cp "\"$ES_HOME/lib/*\"" org.elasticsearch.plugins.PluginManagerCliParser $args
++eval "$JAVA" -client -Delasticsearch -Des.path.home="\"$ES_HOME\"" $properties -cp "\"$ES_CLASSPATH/lib/*\"" org.elasticsearch.plugins.PluginManagerCliParser $args
+--- a/bin/elasticsearch.in.sh     2016-09-23 17:02:23.981594978 +0200
++++ a/bin/elasticsearch.in.sh     2016-09-23 17:04:32.362330778 +0200
+@@ -1,17 +1,5 @@
+ #!/bin/sh
+
+-# check in case a user was using this mechanism
+-if [ "x$ES_CLASSPATH" != "x" ]; then
+-    cat >&2 << EOF
+-Error: Don't modify the classpath with ES_CLASSPATH. Best is to add
+-additional elements via the plugin mechanism, or if code must really be
+-added to the main classpath, add jars to lib/ (unsupported).
+-EOF
+-    exit 1
+-fi
+-
+-ES_CLASSPATH="$ES_HOME/lib/elasticsearch-2.4.0.jar:$ES_HOME/lib/*"
+-
+ if [ "x$ES_MIN_MEM" = "x" ]; then
+     ES_MIN_MEM=256m
+ fi
+

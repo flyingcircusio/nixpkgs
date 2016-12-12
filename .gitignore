@@ -29,3 +29,5 @@ result-*
 tags
 .vagrant
 .version-suffix
+*.sublime-workspace
+*.sublime-project

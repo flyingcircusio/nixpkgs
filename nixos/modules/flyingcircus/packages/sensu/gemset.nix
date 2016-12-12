@@ -54,6 +54,49 @@
       "xml-simple"
     ];
   };
+  "aws-es-transport" = {
+    version = "0.1.4";
+    source = {
+      type = "gem";
+      sha256 = "1r2if0jcbw3xx019fs6lqkz65nffwgh7hjbh5fj13hi09g505m3m";
+    };
+    dependencies = [
+      "aws-sdk"
+      "elasticsearch"
+      "faraday"
+      "faraday_middleware"
+    ];
+  };
+  "aws-sdk" = {
+    version = "2.6.3";
+    source = {
+      type = "gem";
+      sha256 = "0sy3c7rbf1xczab3hn5f04db7r6gm1l5gp96ajv2l1wmvh440avq";
+    };
+    dependencies = [
+      "aws-sdk-resources"
+    ];
+  };
+  "aws-sdk-core" = {
+    version = "2.6.3";
+    source = {
+      type = "gem";
+      sha256 = "0mbkb47nkzdvhnj5x0aqx9gb57snqa1fylb2x3ji5p5y4nv6nn4f";
+    };
+    dependencies = [
+      "jmespath"
+    ];
+  };
+  "aws-sdk-resources" = {
+    version = "2.6.3";
+    source = {
+      type = "gem";
+      sha256 = "0f5sm0jcnc6av40z0dvhl8yqh79w59p5m5v75kfqdv3z42ikhmnl";
+    };
+    dependencies = [
+      "aws-sdk-core"
+    ];
+  };
   "bson" = {
     version = "1.12.3";
     source = {
@@ -82,10 +125,10 @@
     ];
   };
   "daemons" = {
-    version = "1.2.3";
+    version = "1.2.4";
     source = {
       type = "gem";
-      sha256 = "0b839hryy9sg7x3knsa1d6vfiyvn0mlsnhsb6an8zsalyrz1zgqg";
+      sha256 = "1bmb4qrd95b5gl3ym5j3q6mf090209f4vkczggn49n56w6s6zldz";
     };
   };
   "dentaku" = {
@@ -110,13 +153,45 @@
     };
   };
   "domain_name" = {
-    version = "0.5.20160310";
+    version = "0.5.20160826";
     source = {
       type = "gem";
-      sha256 = "0g1175zspkqhlvl9s11g7p2nbmqpvpxxv02q8csd0ryc81laapys";
+      sha256 = "0rg7gvp45xmb5qz8ydp7ivw05hhplh6k7mbawrpvkysl2c77w5xx";
     };
     dependencies = [
       "unf"
+    ];
+  };
+  "elasticsearch" = {
+    version = "1.0.18";
+    source = {
+      type = "gem";
+      sha256 = "1wdy17i56b4m7akp7yavnr8vhfhyz720waphmixq05dj21b11hl0";
+    };
+    dependencies = [
+      "elasticsearch-api"
+      "elasticsearch-transport"
+    ];
+  };
+  "elasticsearch-api" = {
+    version = "1.0.18";
+    source = {
+      type = "gem";
+      sha256 = "1v6nb3ajz5rack3p4b4nz37hs0zb9x738h2ms8cc4plp6wqh1w5s";
+    };
+    dependencies = [
+      "multi_json"
+    ];
+  };
+  "elasticsearch-transport" = {
+    version = "1.0.18";
+    source = {
+      type = "gem";
+      sha256 = "0smfrz8nq49hgf67y5ayxa9i4rmmi0q4m51l0h499ykq4cvcwv6i";
+    };
+    dependencies = [
+      "faraday"
+      "multi_json"
     ];
   };
   "em-redis-unified" = {
@@ -153,11 +228,31 @@
       sha256 = "17jr1caa3ggg696dd02g2zqzdjqj9x9q2nl7va82l36f7c5v6k4z";
     };
   };
-  "ffi" = {
-    version = "1.9.10";
+  "faraday" = {
+    version = "0.9.2";
     source = {
       type = "gem";
-      sha256 = "1m5mprppw0xcrv2mkim5zsk70v089ajzqiq5hpyb0xg96fcyzyxj";
+      sha256 = "1kplqkpn2s2yl3lxdf6h7sfldqvkbkpxwwxhyk7mdhjplb5faqh6";
+    };
+    dependencies = [
+      "multipart-post"
+    ];
+  };
+  "faraday_middleware" = {
+    version = "0.10.0";
+    source = {
+      type = "gem";
+      sha256 = "0nxia26xzy8i56qfyz1bg8dg9yb26swpgci8n5jry8mh4bnx5r5h";
+    };
+    dependencies = [
+      "faraday"
+    ];
+  };
+  "ffi" = {
+    version = "1.9.14";
+    source = {
+      type = "gem";
+      sha256 = "1nkcrmxqr0vb1y4rwliclwlj2ajsi4ddpdx2gvzjy0xbkk5iqzfp";
     };
   };
   "fileutils" = {
@@ -201,6 +296,13 @@
       sha256 = "1c5zmk7ia63yw5l2k14qhfdydxwi1sah1ppjdiicr4zcalvfn0xi";
     };
   };
+  "jmespath" = {
+    version = "1.3.1";
+    source = {
+      type = "gem";
+      sha256 = "07w8ipjg59qavijq59hl82zs74jf3jsp7vxl9q3a2d0wpv5akz3y";
+    };
+  };
   "json" = {
     version = "1.8.3";
     source = {
@@ -209,10 +311,10 @@
     };
   };
   "libxml-ruby" = {
-    version = "2.8.0";
+    version = "2.9.0";
     source = {
       type = "gem";
-      sha256 = "1dhjqp4r9vkdp00l6h1cj8qfndzxlhlxk6b9g0w4v55gz857ilhb";
+      sha256 = "1prdc73db1p7zkdsp41523qmmn95981kmsf91kn7c8yam9w64np2";
     };
   };
   "libxml-xmlrpc" = {
@@ -247,24 +349,24 @@
     ];
   };
   "mime-types" = {
-    version = "2.99.1";
+    version = "2.99.3";
     source = {
       type = "gem";
-      sha256 = "0lwxaah0kafigggdpp1hgswffsdsyy7y9cwhsfaw5irqx21823ip";
+      sha256 = "03j98xr0qw2p2jkclpmk7pm29yvmmh0073d8d43ajmr0h3w7i5l9";
     };
   };
   "minitest" = {
-    version = "5.8.4";
+    version = "5.9.1";
     source = {
       type = "gem";
-      sha256 = "05nlp0w2mfns9pd9ypfbz6zw0r9smlv1m5i4pbpijizm7v3kxmra";
+      sha256 = "0300naf4ilpd9sf0k8si9h9sclkizaschn8bpnri5fqmvm9ybdbq";
     };
   };
   "mixlib-cli" = {
-    version = "1.6.0";
+    version = "1.7.0";
     source = {
       type = "gem";
-      sha256 = "1n2r9l8i5vx5zz1zcizpq0ml6d13aczv42cnwjggnz2p98disf41";
+      sha256 = "0647msh7kp7lzyf6m72g6snpirvhimjm22qb8xgv9pdhbcrmcccp";
     };
   };
   "mongo" = {
@@ -282,6 +384,13 @@
     source = {
       type = "gem";
       sha256 = "1rf3l4j3i11lybqzgq2jhszq7fh7gpmafjzd14ymp9cjfxqg596r";
+    };
+  };
+  "multipart-post" = {
+    version = "2.0.0";
+    source = {
+      type = "gem";
+      sha256 = "09k0b3cybqilk1gwrwwain95rdypixb2q9w65gd44gfzsd84xi1x";
     };
   };
   "mysql" = {
@@ -356,10 +465,10 @@
     ];
   };
   "rmagick" = {
-    version = "2.15.4";
+    version = "2.16.0";
     source = {
       type = "gem";
-      sha256 = "11p3w5rjqb1js74y2d5wlwqny8l0qb5ld1l5q5izs3v3q8sndnv9";
+      sha256 = "0m9x15cdlkcb9826s3s2jd97hxf50hln22p94x8hcccxi1lwklq6";
     };
   };
   "ruby-dbus" = {
@@ -462,6 +571,20 @@
     };
     dependencies = [
       "dnsruby"
+      "sensu-plugin"
+    ];
+  };
+  "sensu-plugins-elasticsearch" = {
+    version = "1.0.0";
+    source = {
+      type = "gem";
+      sha256 = "1s8cd5k222pkvbfbh8z0r9k19zjgsimns9s9pnpm8zf2ckd9syr6";
+    };
+    dependencies = [
+      "aws-es-transport"
+      "elasticsearch"
+      "json"
+      "rest-client"
       "sensu-plugin"
     ];
   };
@@ -688,10 +811,10 @@
     };
   };
   "tilt" = {
-    version = "2.0.2";
+    version = "2.0.5";
     source = {
       type = "gem";
-      sha256 = "0lkd40xfdqkp333vdfhrfjmi2y7k2hjs4azawfb62mrkfp7ivj84";
+      sha256 = "0lgk8bfx24959yq1cn55php3321wddw947mgj07bxfnwyipy9hqf";
     };
   };
   "tzinfo" = {
