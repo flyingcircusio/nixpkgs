@@ -181,6 +181,34 @@ in
           '' ;
       };
 
+      systemd.services.graylog-update-geolite = {
+        description = "Update geolite db for graylog";
+        restartIfChanged = false;
+        after = [ "network.target" ];
+        serviceConfig = {
+          User = config.services.graylog.user;
+          Type = "oneshot";
+        };
+
+        script = ''
+          cd /var/lib/graylog
+          ${pkgs.curl}/bin/curl -O http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
+          ${pkgs.gzip}/bin/gunzip -f GeoLite2-City.mmdb.gz
+        '';
+      };
+
+      systemd.timers.graylog-update-geolite = {
+        description = "Timer for updading the geolite db for graylog";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          Unit = "graylog-update-geolite.service";
+          OnStartupSec = "10m";
+          OnUnitActiveSec = "30d";
+          # Not yet supported by our systemd version.
+          # RandomSec = "3m";
+        };
+      };
+
       services.collectd.extraConfig = ''
         LoadPlugin curl_json
         <Plugin curl_json>
