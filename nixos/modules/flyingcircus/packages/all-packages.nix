@@ -41,6 +41,19 @@ rec {
     openssl = pkgs.openssl_1_0_2;
   };
 
+  openssl = openssl_1_0_1;
+
+  inherit (pkgs.callPackages ./openssl {
+      fetchurl = pkgs.fetchurlBoot;
+      cryptodevHeaders = pkgs.linuxPackages.cryptodev.override {
+        fetchurl = pkgs.fetchurlBoot;
+        onlyHeaders = true;
+      };
+    })
+    openssl_1_0_1
+    openssl_1_0_2
+    openssl_1_1_0;
+
   osm2pgsql = pkgs.callPackage ./osm2pgsql.nix { };
 
   percona = percona57;
