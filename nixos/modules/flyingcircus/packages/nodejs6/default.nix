@@ -43,13 +43,12 @@ in stdenv.mkDerivation {
   patches = stdenv.lib.optional stdenv.isDarwin ./no-xcode.patch;
 
   buildInputs = [ python which ]
-    ++ (optional stdenv.isLinux utillinux)
+    ++ optionals stdenv.isLinux [ utillinux http-parser ]
     ++ optionals stdenv.isDarwin [ pkgconfig openssl libtool ];
   setupHook = ./setup-hook.sh;
 
   enableParallelBuilding = true;
   dontDisableStatic = true;
-  propagatedBuildInputs = [ openssl ];
 
   passthru.interpreterName = "nodejs";
 
