@@ -123,7 +123,7 @@ in {
       after = [ "network-interfaces.target" ];
       environment = { ES_HOME = cfg.dataDir; };
       serviceConfig = {
-        ExecStart = "${pkgs.elasticsearch}/bin/elasticsearch -Des.path.conf=${configDir} ${toString cfg.extraCmdLineOptions}";
+        ExecStart = "${pkgs.elasticsearch}/bin/elasticsearch -Des.path.conf=${cfg.dataDir}/config -Des.path.scripts=${cfg.dataDir}/scripts ${toString cfg.extraCmdLineOptions}";
         User = "elasticsearch";
         PermissionsStartOnly = true;
       };
@@ -133,7 +133,15 @@ in {
 
         # Install plugins
         rm ${cfg.dataDir}/plugins || true
-        ln -s ${esPlugins}/plugins ${cfg.dataDir}/plugins
+        ln -s ${esPlugins} ${cfg.dataDir}/plugins
+
+        # Install scripts
+        mkdir -p ${cfg.dataDir}/scripts
+
+        # Install config
+        rm -rf ${cfg.dataDir}/config || true
+        mkdir -p ${cfg.dataDir}/config
+        cp -L ${configDir}/* ${cfg.dataDir}/config/
       '';
       postStart = mkBefore ''
         until ${pkgs.curl}/bin/curl -s -o /dev/null ${cfg.host}:${toString cfg.port}; do
