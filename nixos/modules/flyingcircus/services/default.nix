@@ -3,7 +3,7 @@
 {
   imports =
     [
-     ./elasticsearch2.nix
+     ./elasticsearch.nix
      ./fcmanage.nix
      ./graylog.nix
      ./influxdb011.nix

@@ -67,7 +67,7 @@
 
     vulnix = pkgs.callPackage ./vulnix { };
 
-    elasticsearch2 = pkgs.callPackage ./elasticsearch2 { };
+    elasticsearch = pkgs.callPackage ./elasticsearch { };
     elasticsearchPlugins = lib.recurseIntoAttrs (
       pkgs.callPackage ./elasticsearch/plugins.nix { }
     );

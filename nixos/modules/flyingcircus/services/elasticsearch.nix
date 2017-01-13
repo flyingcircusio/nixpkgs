@@ -1,6 +1,7 @@
 { config, lib, pkgs, ... }:
 
 with lib;
+with (import ../lib); #fclib
 
 let
   cfg = config.services.elasticsearch;
@@ -29,8 +30,8 @@ let
 in {
 
   ###### interface
-
-  options.services.elasticsearch = {
+  ### TODO: need to find a better way to hide option attributes
+  /*options.services.elasticsearch = {
     enable = mkOption {
       description = "Whether to enable elasticsearch.";
       default = false;
@@ -112,27 +113,28 @@ in {
       type = types.listOf types.package;
     };
 
-  };
+  };*/
 
   ###### implementation
 
   config = mkIf cfg.enable {
     systemd.services.elasticsearch = {
-      description = "Elasticsearch Daemon";
+      /*description = "Elasticsearch Daemon";
       wantedBy = [ "multi-user.target" ];
       after = [ "network-interfaces.target" ];
-      environment = { ES_HOME = cfg.dataDir; };
-      serviceConfig = {
+      environment = { ES_HOME = cfg.dataDir; };*/
+      serviceConfig = mkPlatform {
         ExecStart = "${pkgs.elasticsearch}/bin/elasticsearch -Des.path.conf=${cfg.dataDir}/config -Des.path.scripts=${cfg.dataDir}/scripts ${toString cfg.extraCmdLineOptions}";
         User = "elasticsearch";
         PermissionsStartOnly = true;
       };
-      preStart = ''
+      preStart = mkForce ''
         mkdir -m 0700 -p ${cfg.dataDir}
         if [ "$(id -u)" = 0 ]; then chown -R elasticsearch ${cfg.dataDir}; fi
 
         # Install plugins
-        rm ${cfg.dataDir}/plugins || true
+        rm -rf ${cfg.dataDir} || true
+        mkdir -p {cfg.dataDir}
         ln -s ${esPlugins} ${cfg.dataDir}/plugins
 
         # Install scripts
@@ -150,13 +152,13 @@ in {
       '';
     };
 
-    environment.systemPackages = [ pkgs.elasticsearch ];
+    /*environment.systemPackages = [ pkgs.elasticsearch ];
 
     users.extraUsers = singleton {
       name = "elasticsearch";
       uid = config.ids.uids.elasticsearch;
-      description = "Elasticsearch daemon user";
+      description =  "Elasticsearch daemon user";
       home = cfg.dataDir;
-    };
+    };*/
   };
 }
