@@ -2,6 +2,7 @@
 
 let
   cfg = config.flyingcircus.roles.elasticsearch;
+  cfg_service = config.services.elasticsearch;
   fclib = import ../lib;
 
   esNodes =
@@ -22,10 +23,32 @@ let
     else cfg.clusterName;
 
   currentMemory = fclib.current_memory config 1024;
+
   esHeap =
     fclib.min [
       (currentMemory / cfg.heapDivisor)
       (31 * 1024)];
+
+  configDir = pkgs.buildEnv {
+      name = "elasticsearch-config";
+      paths = [
+        (pkgs.writeTextDir "elasticsearch.yml" esConfig)
+        (pkgs.writeTextDir "logging.yml" cfg_service.logging)
+      ];
+    };
+
+  esPlugins = pkgs.buildEnv {
+        name = "elasticsearch-plugins";
+        paths = cfg_service.plugins;
+      };
+
+  esConfig = ''
+    network.host: ${cfg_service.host}
+    network.port: ${toString cfg_service.port}
+    network.tcp.port: ${toString cfg_service.tcp_port}
+    cluster.name: ${cfg_service.cluster_name}
+    ${cfg_service.extraConf}
+  '';
 
 in
 {
@@ -78,6 +101,7 @@ in
       host = thisNode;
       dataDir = cfg.dataDir;
       cluster_name = clusterName;
+      plugins = pkgs.elasticsearchPackages;
       extraConf = ''
         node.name: ${config.networking.hostName}
         discovery.zen.ping.unicast.hosts: ${builtins.toJSON esNodes}
@@ -88,8 +112,33 @@ in
       environment = {
         ES_HEAP_SIZE = "${toString esHeap}m";
       };
-      serviceConfig.LimitNOFILE = 65536;
-      serviceConfig.LimitMEMLOCK = "infinity";
+      serviceConfig = fclib.mkPlatform {
+        ExecStart = "${pkgs.elasticsearch}/bin/elasticsearch -Des.path.conf=${cfg_service.dataDir}/config -Des.path.scripts=${cfg_service.dataDir}/scripts ${toString cfg_service.extraCmdLineOptions}"; User = "elasticsearch";
+        PermissionsStartOnly = true;
+        LimitNOFILE = 65536;
+        LimitMEMLOCK = "infinity";
+      };
+      preStart = fclib.mkPlatform ''
+        mkdir -m 0700 -p ${cfg_service.dataDir}
+        if [ "$(id -u)" = 0 ]; then chown -R elasticsearch ${cfg_service.dataDir}; fi
+
+        # Install plugins
+        rm -rf ${cfg_service.dataDir}/plugins || true
+        ln -s ${esPlugins} ${cfg_service.dataDir}/plugins
+
+        # Install scripts
+        mkdir -p ${cfg_service.dataDir}/scripts
+
+        # Install config
+        rm -rf ${cfg_service.dataDir}/config || true
+        mkdir -p ${cfg_service.dataDir}/config
+        cp -L ${configDir}/* ${cfg_service.dataDir}/config/
+      '';
+      postStart = mkBefore ''
+        until ${pkgs.curl}/bin/curl -s -o /dev/null ${cfg_service.host}:${toString cfg_service.port}; do
+          sleep 1
+        done
+      '';
     };
 
     # System tweaks
