@@ -43,7 +43,7 @@
         nmap
         nodejs
         openldap
-        openssl
+        openssl_1_0_2
         php
         postgresql
         protobuf

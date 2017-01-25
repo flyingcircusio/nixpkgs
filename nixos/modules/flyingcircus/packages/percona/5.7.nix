@@ -24,7 +24,7 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DWITH_SSL=yes"
-    "-DWITH_EMBEDDED_SERVER=yes"
+    "-DWITH_EMBEDDED_SERVER=no"
     "-DWITH_ZLIB=yes"
     "-DWITH_EDITLINE=bundled"
     "-DHAVE_IPV6=yes"
