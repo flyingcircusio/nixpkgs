@@ -95,6 +95,7 @@ rec {
   };
   qpress = pkgs.callPackage ./percona/qpress.nix { };
 
+  rabbitmq_server = pkgs.callPackage ./rabbitmq-server.nix { };
   rabbitmq_delayed_message_exchange =
     pkgs.callPackage ./rabbitmq_delayed_message_exchange.nix { };
 
