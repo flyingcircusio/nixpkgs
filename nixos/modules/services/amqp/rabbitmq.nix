@@ -12,7 +12,7 @@ let
     builder = builtins.toFile "makePlugins.sh" ''
       source $stdenv/setup
       mkdir -p $out
-      ln -s $server/plugins/* $out
+      ln -s $server/libexec/rabbitmq/plugins/* $out
       for package in $packages
       do
         ln -s $package/* $out

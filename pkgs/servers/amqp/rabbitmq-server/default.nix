@@ -1,18 +1,18 @@
 { stdenv, fetchurl, erlang, python, libxml2, libxslt, xmlto
-, docbook_xml_dtd_45, docbook_xsl, zip, unzip, rsync }:
+, docbook_xml_dtd_45, docbook_xsl, zip, unzip }:
 
 stdenv.mkDerivation rec {
   name = "rabbitmq-server-${version}";
 
-  version = "3.6.5";
+  version = "3.4.3";
 
   src = fetchurl {
-    url = "http://www.rabbitmq.com/releases/rabbitmq-server/v${version}/${name}.tar.xz";
-    sha256 = "1v48ay4z8n9q9c8rg7fhrfa4cg2dqiwbjnr3yl5i7xdam0y46l4m";
+    url = "http://www.rabbitmq.com/releases/rabbitmq-server/v${version}/${name}.tar.gz";
+    sha256 = "1mdma4bh6196ix9vhsigb3yav8l5gy2x78nsqxychm4hz5l2vjx6";
   };
 
   buildInputs =
-    [ erlang python libxml2 libxslt xmlto docbook_xml_dtd_45 docbook_xsl zip unzip rsync ];
+    [ erlang python libxml2 libxslt xmlto docbook_xml_dtd_45 docbook_xsl zip unzip ];
 
   preBuild =
     ''
@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
       patchShebangs .
     '';
 
-  installFlags = "PREFIX=$(out) RMQ_ERLAPP_DIR=$(out)";
+  installFlags = "TARGET_DIR=$(out)/libexec/rabbitmq SBIN_DIR=$(out)/sbin MAN_DIR=$(out)/share/man DOC_INSTALL_DIR=$(out)/share/doc";
 
   preInstall =
     ''
