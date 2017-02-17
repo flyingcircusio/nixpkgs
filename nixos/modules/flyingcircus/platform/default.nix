@@ -169,9 +169,9 @@ in
     environment.shellInit = ''
      # Grant easy access to the machine's ENC data for some variables to
      # shell scripts.
-     export FCIO_LOCATION="${cfg.enc.parameters.location}"
-     export FCIO_ENVIRONMENT="${cfg.enc.parameters.environment}"
-     export FCIO_HOSTNAME="${cfg.enc.name}"
+     export FCIO_LOCATION="${cfg.enc.parameters.location or "local"}"
+     export FCIO_ENVIRONMENT="${cfg.enc.parameters.environment or "env"}"
+     export FCIO_HOSTNAME="${cfg.enc.name or "localhost"}"
 
      # help pip to find libz.so when building lxml
      export LIBRARY_PATH=/var/run/current-system/sw/lib
