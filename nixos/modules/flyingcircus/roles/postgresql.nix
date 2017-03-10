@@ -97,6 +97,11 @@ in
     services.postgresql.initialScript = ./postgresql-init.sql;
     services.postgresql.dataDir = "/srv/postgresql/${version}";
 
+    systemd.services.postgresql.serviceConfig = {
+      RestartSec = "92s";
+      Restart = "on-failure";
+    };
+
     environment.systemPackages = [ (builtins.getAttr version package) ];
 
     users.users.postgres = {
@@ -185,10 +190,10 @@ in
       ${local_config}
     '';
 
-    environment.etc."local/postgresql/${version}/README.txt".text = ''
-        Put your local postgresql configuration here. This directory
-        is being included with include_dir.
-        '';
+    environment.etc."local/postgresql/README.txt".text = ''
+      Put your local postgresql configuration into /etc/local/postgresql/${version}/.
+      This directory is being included with 'include_dir'.
+    '';
 
     services.postgresql.authentication = ''
       local postgres root       trust
