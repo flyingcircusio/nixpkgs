@@ -7087,7 +7087,7 @@ let self = _self // overrides; _self = with self; {
       license = "perl";
     };
   };
-  
+
   MouseXGetOpt = buildPerlModule {
     name = "mousex-getopt-0.35";
     src = fetchurl {
@@ -9428,7 +9428,7 @@ let self = _self // overrides; _self = with self; {
       platforms = stdenv.lib.platforms.linux;
     };
   };
-  
+
   PackageVariant = buildPerlPackage {
     name = "Package-Variant-1.002002";
     src = fetchurl {
@@ -11941,6 +11941,7 @@ let self = _self // overrides; _self = with self; {
       sha256 = "1fmp9aib1kaps9vhs4dwxn7b15kgnlz9f714bxvqsd1j1q8spzsj";
     };
     buildInputs = [ pkgs.curl ];
+    patches = [ ./patches/WWWCurl-remove-symbol.patch ]; # needed for curl 7.50
     preConfigure =
       ''
         substituteInPlace Makefile.PL --replace '"cpp"' '"gcc -E"'
