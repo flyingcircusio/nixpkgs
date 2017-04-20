@@ -1,31 +1,29 @@
-{ fetchurl, stdenv, acl, openssl, libxml2, attr, zlib, bzip2, e2fsprogs, xz
+{ fetchurl, stdenv, acl, openssl, libxml2, attr, zlib, bzip2, e2fsprogs, xz, lzo
 , sharutils }:
 
 stdenv.mkDerivation rec {
-  name = "libarchive-3.1.2";
+  name = "libarchive-${version}";
+  version = "3.2.1";
 
   src = fetchurl {
-    urls = [
-      "http://pkgs.fedoraproject.org/repo/pkgs/libarchive/libarchive-3.1.2.tar.gz/efad5a503f66329bb9d2f4308b5de98a/${name}.tar.gz"
-      "${meta.homepage}/downloads/${name}.tar.gz"
-    ];
-    sha256 = "0pixqnrcf35dnqgv0lp7qlcw7k13620qkhgxr288v7p4iz6ym1zb";
+    url = "${meta.homepage}/downloads/${name}.tar.gz";
+    sha256 = "1lngng84k1kkljl74q0cdqc3s82vn2kimfm02dgm4d6m7x71mvkj";
   };
 
-  patches = [
-    ./CVE-2013-0211.patch # https://github.com/libarchive/libarchive/commit/22531545
-    ./CVE-2015-1197.patch # https://github.com/NixOS/nixpkgs/issues/6799
-  ];
-
-  buildInputs = [ sharutils libxml2 zlib bzip2 openssl xz ] ++
+  buildInputs = [ sharutils libxml2 zlib bzip2 openssl xz lzo ] ++
     stdenv.lib.optionals stdenv.isLinux [ e2fsprogs attr acl ];
+
+  # Without this, pkgconfig-based dependencies are unhappy
+  propagatedBuildInputs = stdenv.lib.optionals stdenv.isLinux [ attr acl ];
 
   preBuild = if stdenv.isCygwin then ''
     echo "#include <windows.h>" >> config.h
   '' else null;
 
   preFixup = ''
-    sed 's|-lcrypto|-L${openssl}/lib -lcrypto|' -i $out/lib/libarchive.la
+    sed -i $out/lib/libarchive.la \
+      -e 's|-lcrypto|-L${openssl.out}/lib -lcrypto|' \
+      -e 's|-llzo2|-L${lzo}/lib -llzo2|'
   '';
 
   meta = {
