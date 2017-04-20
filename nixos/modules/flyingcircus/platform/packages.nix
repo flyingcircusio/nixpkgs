@@ -3,7 +3,8 @@
 {
   config = {
 
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = with pkgs;
+    [
         apacheHttpd
         atop
         bc
@@ -19,7 +20,13 @@
         gcc
         gdbm
         git
-        gnupg
+        (gnupg.override{
+          x11Support = false;
+          pinentry = pkgs.pinentry.override {
+            gtk2 = null;
+            qt4 = null;
+          };
+        })
         go
         gptfdisk
         graphviz
