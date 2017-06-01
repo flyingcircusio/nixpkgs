@@ -81,7 +81,7 @@ rec {
     };
 
   inherit (pkgs.callPackage ./nodejs { libuv = pkgs.libuvVersions.v1_9_1; })
-    nodejs4 nodejs6;
+    nodejs4 nodejs6 nodejs7;
 
   inherit (pkgs.callPackages ./openssl {
       fetchurl = pkgs.fetchurlBoot;

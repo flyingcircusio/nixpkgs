@@ -70,4 +70,13 @@ in {
       sha256 = "1gz3gyy3dkwr1kd3q85lhkl1m8q84fdq75xy1qgpa42d7b59g2d9";
     };
   };
+
+  nodejs7 = common rec {
+    version = "7.10.0";
+    src = fetchurl {
+      url = "http://nodejs.org/dist/v${version}/node-v${version}.tar.gz";
+      sha256 = "c4843fe8bffb59c2327063a5e67a89af60d7927f7ace7548695a2cf4c1aa6d03";
+    };
+
+  };
 }

@@ -21,6 +21,11 @@
       inherit system;
     });
 
+  nodejs7 = hydraJob
+    (import ./nodejs7.nix {
+      inherit system;
+    });
+
   inherit (import ./mysql.nix { inherit system hydraJob; })
     mysql_5_5 mysql_5_6 mysql_5_7;
 
