@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'check_disk=fc.sensuplugins.disk:main',
             'check_journal=fc.sensuplugins.journal:main',
+            'check_journal_file=fc.sensuplugins.journalfile:main',
             'check_writable=fc.sensuplugins.writable:main'
         ],
     },
