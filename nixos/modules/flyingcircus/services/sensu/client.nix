@@ -321,6 +321,11 @@ in {
         command = "${pkgs.fcsensuplugins}/bin/check_journal -v https://bitbucket.org/flyingcircus/fc-logcheck-config/raw/tip/nixos-journal.yaml";
         interval = 600;
       };
+      journal_file = {
+        notification = "Journal file too small. (last 12h)";
+        command = "${pkgs.fcsensuplugins}/bin/check_journal_file";
+        interval = 12 * 3600;
+      };
 
       vulnix = {
         notification = "Security vulnerabilities in the last 6h";
