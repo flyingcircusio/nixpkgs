@@ -17,6 +17,9 @@ let
   localConfig =
     fclib.jsonFromFile "/etc/local/memcached/memcached.json" defaultConfig;
 
+  addr = head srv;
+  port = localConfig.port;
+
 in
 {
   options = {
@@ -31,7 +34,9 @@ in
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkMerge [
+
+  (mkIf cfg.enable {
 
     system.activationScripts.fcio-memcached = ''
       install -d -o ${toString config.ids.uids.memcached} -g service -m 02775 \
@@ -53,14 +58,52 @@ in
       listen = concatStringsSep "," srv;
     } // localConfig;
 
-    flyingcircus.services.sensu-client.checks.memcached =
-      let
-        addr = head srv;
-        port = localConfig.port;
-      in {
+    flyingcircus.services.sensu-client.checks.memcached = {
         notification = "memcached alive";
         command = "check-memcached-stats.rb -h ${addr} -p ${toString port}";
       };
 
-  };
+      services.telegraf.inputs = {
+        memcached = [{
+          servers = ["${addr}:${toString port}"];
+        }];
+      };
+  })
+
+  {
+    flyingcircus.roles.statshost.prometeusMetricRelabel = [
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_hits";
+       replacement = "\${2}";
+       target_label = "command";
+      }
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_hits";
+       replacement = "hit";
+       target_label = "status";
+      }
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_hits";
+       replacement = "memcached_commands_total";
+       target_label = "__name__";
+      }
+
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_misses";
+       replacement = "\${2}";
+       target_label = "command";
+      }
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_misses";
+       replacement = "miss";
+       target_label = "status";
+      }
+      { source_labels = ["__name__"];
+       regex = "(memcached)_(.+)_misses";
+       replacement = "memcached_commands_total";
+       target_label = "__name__";
+      }
+    ];
+  }
+  ];
 }
