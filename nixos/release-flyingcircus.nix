@@ -1,6 +1,7 @@
 # This jobset is used to generate a NixOS channel that contains a
 # small subset of Nixpkgs, mostly useful for servers that need fast
 # security updates.
+fdsajlkfdsa
 
 { nixpkgs ? { outPath = ./..; revCount = 56789; shortRev = "gfedcba"; }
 , stableBranch ? false
