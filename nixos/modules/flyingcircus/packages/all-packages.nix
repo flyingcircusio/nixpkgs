@@ -118,6 +118,8 @@ in rec {
   fcsensuplugins = pkgs.callPackage ./fcsensuplugins { };
   fcuserscan = pkgs.callPackage ./fcuserscan.nix { };
 
+  flock = pkgs.callPackage ./flock.nix {};
+
   grafana = pkgs_17_09.callPackage ./grafana { };
   graylog = pkgs.callPackage ./graylog.nix { };
 
