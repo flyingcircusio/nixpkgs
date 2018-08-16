@@ -50,6 +50,7 @@ in rec {
     nodejs-8_x
     nodejs-9_x
     pipenv
+    shadow
     vim;
 
   inherit (pkgs_17_09)
