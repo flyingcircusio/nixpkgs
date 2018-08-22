@@ -40,6 +40,7 @@ in
     services.httpd.adminAddr = "nobody@example.com";
     services.httpd.multiProcessingModule = "worker";
     services.httpd.port = serverStatusPort;
+    services.httpd.extraModules = [ "proxy_fcgi" ];
 
     services.httpd.extraConfig = ''
       ExtendedStatus on
