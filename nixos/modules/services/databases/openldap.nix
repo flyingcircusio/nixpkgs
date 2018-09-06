@@ -122,6 +122,9 @@ in
       description = "LDAP server";
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
+      environment = {
+        openldap_config_opts = configOpts;
+      };
       preStart = ''
         mkdir -p /var/run/slapd
         chown -R "${cfg.user}:${cfg.group}" /var/run/slapd
