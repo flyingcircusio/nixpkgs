@@ -41,7 +41,7 @@ rec {
         fi
           chmod ${mode} ${file}
         '';
-      value = fclib.configFromFile file generatedPassword;
+      value = removeSuffix "\n" (fclib.configFromFile file generatedPassword);
     };
 
 }
