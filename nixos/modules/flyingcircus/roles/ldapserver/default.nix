@@ -132,7 +132,6 @@ let
 
     BEGIN {
       FS="\n"
-      "${pkgs.nettools}/bin/hostname" | getline host
     }
 
     /^\s*#/ { next }
@@ -148,8 +147,8 @@ let
 
     # append standard URLs to keep checks going
     END {
-      print "ldap://" host ".ipv4"
-      print "ldap://" host ".ipv6"
+      print "ldap://${config.networking.hostName}.ipv4"
+      print "ldap://${config.networking.hostName}.ipv6"
       print "ldap://localhost"
       print "ldapi://%2fvar%2frun%2fslapd%2fslapd.sock"
     }
@@ -201,9 +200,24 @@ in
           chown -R "${cfg.user}:${cfg.group}" "${cfg.dataDir}"
         '';
 
-      systemd.services.sensu-client.path = [
-        pkgs.perlPackages.NagiosPluginLDAP ];
-
+      flyingcircus.services.sensu-client.checks =
+        let
+          fqdn = "${config.networking.hostName}.${config.networking.domain}";
+          ldapCheck = ''
+            check_ldap -3 -H ${fqdn} -w 2 -c 4 -b '${suffix}' \
+              -D 'cn=Reader,${suffix}' \
+              -P '${readerPassword.value}' \
+          '';
+        in {
+          slapd_ipv4 = {
+            command = "${ldapCheck} -4";
+            notification = "slapd IPv4 alive";
+          };
+          slapd_ipv6 = {
+            command = "${ldapCheck} -6";
+            notification = "slapd IPv6 alive";
+          };
+        };
     })
     (mkIf cfg.enable {
 

@@ -30,6 +30,7 @@ rec {
           "${pkgs.apg}/bin/apg -a 1 -M lnc -n 1 -m 32 -d > $out");
 
     in rec {
+      inherit file;
       activation = ''
         # Only install if not there, otherwise, permissions might change.
         test -d $(dirname ${file}) || install -d $(dirname ${file})
