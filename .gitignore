@@ -27,10 +27,10 @@ result
 result-*
 *.rs.bk
 share/
-*.sublime-workspace
+*.*-workspace
 *.sw?
 tags
 target/
 .vagrant
 .version-suffix
-*.sublime-project
+*.*-project
