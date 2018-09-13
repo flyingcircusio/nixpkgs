@@ -11,8 +11,10 @@ let
   dataDir = config.services.openldap.dataDir;
 
   suffixFile = "/etc/local/ldapserver/suffix";
-  suffix = removeSuffix "\n"
-    (fclib.configFromFile suffixFile "");
+  suffix = fclib.coalesce [
+     cfg.suffix
+     (removeSuffix "\n" (fclib.configFromFile suffixFile ""))
+  ];
 
   o = builtins.readFile
     (pkgs.runCommand
@@ -144,33 +146,41 @@ let
         exit 1
       }
     }
-
-    # append standard URLs to keep checks going
-    END {
-      print "ldap://${config.networking.hostName}.ipv4"
-      print "ldap://${config.networking.hostName}.ipv6"
-      print "ldap://localhost"
-      print "ldapi://%2fvar%2frun%2fslapd%2fslapd.sock"
-    }
   '';
   listenUrlsPath = "/etc/local/ldapserver/listen_urls";
-  listenUrls =
+  listenUrls = 
     let contents = fclib.configFromFile listenUrlsPath "";
-    in splitString "\n"
+    in 
+    [ "ldap://localhost"
+      "ldapi://%2fvar%2frun%2fslapd%2fslapd.sock" ]
+    ++
+    (map 
+      (addr: "ldap://${addr}")
+      (fclib.listenAddressesQuotedV6 config "ethsrv"))
+    ++
+    (splitString "\n"
       (removeSuffix "\n"
         (builtins.readFile
           (pkgs.runCommand "parsedListenUrls" { preferLocalBuild = true; } ''
             cat << __EOF__  | ${parseListenUrls} > $out
             ${contents}
             __EOF__
-          '')));
+          ''))));
 in
 {
 
   options = {
     flyingcircus.roles.ldapserver = {
       enable = lib.mkEnableOption "LDAPServer role";
+
+      suffix = mkOption {
+        type = types.nullOr types.string;
+        default = null;
+        description = "Suffix override (mainly for testing).";
+      };
     };
+
+
   };
 
   config = mkMerge [

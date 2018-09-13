@@ -16,6 +16,8 @@ rec {
 
   mkPlatform = lib.mkOverride 900;
 
+  coalesce = list: findFirst (el: el != null) null list;
+
   getServicePassword = {
       pkgs
       , file
