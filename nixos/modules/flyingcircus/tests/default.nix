@@ -23,6 +23,7 @@
 
   kibana = hydraJob (import ./kibana.nix { inherit system; });
 
+  ldapserver =  hydraJob (import ./ldapserver.nix { inherit system; });
   login = hydraJob (import ./login.nix { inherit system; });
 
   mariadb = hydraJob (import ./mariadb.nix { inherit system; });

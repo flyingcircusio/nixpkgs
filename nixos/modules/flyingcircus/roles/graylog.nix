@@ -17,26 +17,17 @@ let
   # -- files --
   rootPasswordFile = "/etc/local/graylog/password";
   passwordSecretFile = "/etc/local/graylog/password_secret";
-  # -- passwords --
-  generatedRootPassword = mkPassword "graylog.rootPassword";
-  generatedPasswordSecret = mkPassword "graylog.passwordSecret";
 
-  rootPassword = removeSuffix "\n"
-    (if cfg.rootPassword  == null
-    then (fclib.configFromFile
-            rootPasswordFile
-            generatedRootPassword)
-    else cfg.rootPassword);
+  rootPassword = fclib.getServicePassword {
+    inherit pkgs;
+    file = rootPasswordFile;
+  };
+  rootPasswordSha2 = mkSha2 rootPassword.value;
 
-  rootPasswordSha2 = mkSha2 rootPassword;
-
-  passwordSecret =
-    if cfg.passwordSecret == null
-    then (fclib.configFromFile
-            passwordSecretFile
-            generatedPasswordSecret)
-    else cfg.passwordSecret;
-
+  passwordSecret = fclib.getServicePassword {
+    inherit pkgs;
+    file = passwordSecretFile;
+  };
 
   glAPIPort = 9001;
   glAPIHAPort = 8002;
@@ -48,26 +39,6 @@ let
   restListenUri = "http://${listenOn}:${toString glAPIPort}/api";
 
   # -- helper functions --
-  passwordActivation = file: password: user:
-    let script = ''
-     install -d -o ${toString config.ids.uids."${user}"} -g service -m 02775 \
-        $(dirname ${file})
-      if [[ ! -e ${file} ]]; then
-        ( umask 007;
-          echo ${password} > ${file}
-          chown ${user}:service ${file}
-        )
-      fi
-      chmod 0660 ${file}
-    '';
-    in script;
-
-  mkPassword = identifier:
-    removeSuffix "\n" (readFile
-      (pkgs.runCommand identifier { preferLocalBuild = true; }
-        "${pkgs.apg}/bin/apg -a 1 -M lnc -n 1 -m 32 > $out")
-      );
-
   mkSha2 = text:
     removeSuffix "\n" (readFile
     (pkgs.runCommand "mkSha2" {
@@ -297,14 +268,15 @@ in
       '';
 
       system.activationScripts.fcio-loghost =
-        stringAfter
-          [ ]
-          (passwordActivation rootPasswordFile rootPassword serviceUser +
-           passwordActivation passwordSecretFile passwordSecret serviceUser);
+        stringAfter [ "users" "groups" ] ''
+          ${rootPassword.activation}
+          ${passwordSecret.activation}
+        '';
 
       services.graylog = {
         enable = true;
-        inherit passwordSecret rootPasswordSha2 webListenUri restListenUri;
+        inherit rootPasswordSha2 webListenUri restListenUri;
+        passwordSecret = passwordSecret.value;
         elasticsearchHosts = cfg.esNodes;
         javaHeap = ''${toString
           (fclib.max [
@@ -363,7 +335,7 @@ in
         script = let
           api = restListenUri;
           user = "admin";
-          pw = rootPassword;
+          pw = rootPassword.value;
 
           syslog_udp_configuration = {
             configuration = {
@@ -410,7 +382,7 @@ in
           configure_graylog_raw = what: ''
             ${pkgs.fcmanage}/bin/fc-graylog \
               -u '${user}' \
-              -p '${removeSuffix "\n" pw}' \
+              -p '${pw}' \
               ${api} \
               configure \
               ${what}
@@ -473,7 +445,7 @@ in
           ExecStart = ''
             ${pkgs.fcmanage}/bin/fc-graylog \
               -u admin \
-              -p '${removeSuffix "\n" rootPassword}' \
+              -p '${rootPassword.value}' \
               ${restListenUri} \
               collect_journal_age_metric --socket-path /run/telegraf/influx.sock
 
@@ -486,7 +458,7 @@ in
         <Plugin curl_json>
           <URL "${restListenUri}/system/journal">
             User "admin"
-            Password "${rootPassword}"
+            Password "${rootPassword.value}"
             Header "Accept: application/json"
             Instance "graylog"
             <Key "uncommitted_journal_entries">
@@ -501,7 +473,7 @@ in
           </URL>
           <URL "${restListenUri}/system/throughput">
             User "admin"
-            Password "${rootPassword}"
+            Password "${rootPassword.value}"
             Header "Accept: application/json"
             Instance "graylog"
             <Key "throughput">
@@ -528,7 +500,7 @@ in
                     "org.graylog2.throughput.input"
                     "org.graylog2.throughput.output" ];
         username = "admin";
-        password = rootPassword;
+        password = rootPassword.value;
       }];
 
       flyingcircus.services.sensu-client.checks = {

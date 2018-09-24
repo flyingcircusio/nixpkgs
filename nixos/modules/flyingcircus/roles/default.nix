@@ -26,6 +26,7 @@ in
      ./haproxy.nix
      ./java.nix
      ./kibana.nix
+     ./ldapserver
      ./loghost.nix
      ./mailserver.nix
      ./memcached.nix

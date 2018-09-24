@@ -5,6 +5,7 @@
 .overrideDerivation
   (old: {
     buildInputs = [ pkgs.openssh pkgs.perl ];
+    nativeBuildInputs = [ pkgs.openldap ];
     preConfigure= ''
       configureFlagsArray=(
         --with-openssl=${pkgs.openssl}
