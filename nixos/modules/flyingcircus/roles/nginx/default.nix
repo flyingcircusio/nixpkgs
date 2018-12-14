@@ -26,7 +26,7 @@ let
       default_type application/octet-stream;
       charset UTF-8;
 
-      map_hash_bucket_size 64;
+      map_hash_bucket_size 128;
 
       map $remote_addr $remote_addr_anon_head {
         default 0.0.0;
