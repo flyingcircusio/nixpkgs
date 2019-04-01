@@ -23,8 +23,8 @@ let
     name = "nixpkgs-${rev}";
     owner = "NixOS";
     repo = "nixpkgs";
-    rev = "8c2447fde";
-    sha256 = "1zp6gn7h8mvs8a8fl9bxwm5ah8c3vg7irfihfr3k104byhfq2xd6";
+    rev = "43ba99fa0354421dace7072ea4639d14bbb94f50";
+    sha256 = "124w60i6rwj91l0vlz6vklmk82mbw7v30rqqs17rj6wqn57948wx";
   };
   pkgs_18_09 = import pkgs_18_09_src {
     config = { allowUnfree = true; } // config;
