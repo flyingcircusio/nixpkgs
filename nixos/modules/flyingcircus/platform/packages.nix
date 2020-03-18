@@ -60,7 +60,7 @@
         pwgen
         python2Full
         python34
-        pythonPackages.virtualenv
+        virtualenv_16
         ripgrep
         screen
         strace
