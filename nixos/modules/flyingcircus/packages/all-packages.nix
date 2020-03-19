@@ -350,6 +350,8 @@ in rec {
   # have to callPackage them instead of using the pre-made package.
   virtualboxGuestAdditions = pkgs_18_03.callPackage "${pkgs_18_03_src}/pkgs/applications/virtualization/virtualbox/guest-additions" { kernel = linux_4_4; };
 
+  virtualenv_16 = pkgs_18_09.pythonPackages.virtualenv;
+
   xtrabackup = pkgs_18_09.callPackage ./percona/xtrabackup.nix {
     inherit percona;
     boost = pkgs_18_09.boost168;

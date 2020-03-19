@@ -107,18 +107,6 @@ in {
         }
       '';
 
-      services.telegraf.inputs = {
-        logparser = [ {
-          files = [ "/var/log/fc-collect-garbage.log" ];
-          grok = {
-            patterns = [
-              "%{DATESTAMP_RFC2822:timestamp} time=%{DURATION:time:duration}"
-            ];
-            measurement = "fc_collect_garbage";
-          };
-        } ];
-      };
-
       systemd.timers.fc-collect-garbage = {
         description = "Timer for fc-collect-garbage";
         wantedBy = [ "timers.target" ];
