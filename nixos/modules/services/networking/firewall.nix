@@ -237,7 +237,6 @@ let
     ${cfg.extraStopCommands}
   '';
 
-  # FC: don't use
   reloadScript = writeShScript "firewall-reload" ''
     ${helpers}
 
@@ -260,83 +259,6 @@ let
       ${stopScript}
       exit 1
     fi
-  '';
-
-  fwDir = "/var/lib/firewall";
-  confMarker = "${fwDir}/configuration-in-progress";
-
-  generateRules = writeShScript "generate-firewall-rules" ''
-    export PATH=${with pkgs; makeBinPath [ iproute procps systemd ]}:$PATH
-    echo -n "Executing firewall scripts in netns fcio-firewall ... "
-
-    # Need nscd running for DNS lookups. Starts a temporary instance if
-    # systemd would start it later on.
-    if ! pgrep nscd >/dev/null; then
-      systemctl start nscd
-    fi
-
-    ip netns del fcio-firewall 2>/dev/null || true
-    ip netns add fcio-firewall
-    ip netns exec fcio-firewall "$@"
-    ip netns exec fcio-firewall iptables-save > ${fwDir}/iptables-save
-    ip netns exec fcio-firewall ip6tables-save > ${fwDir}/ip6tables-save
-    ip netns del fcio-firewall
-
-    echo "done."
-  '';
-
-  # Generally rely on saved rules as we don't expect network connectivity at
-  # this point. This is expected to fail if rules are not available.
-  atomicStart = writeShScript "firewall-atomic-start" ''
-    # Trying to generate from scratch - this is the safest approach but may fail
-    # if DNS lookups are involved.
-    echo "Activating firewall (may fail) ..."
-    if ! ${atomicReload}; then
-      echo "Trying to load firewall rules from ${fwDir} ..."
-      if [[ -e ${fwDir}/iptables-save && -e ${fwDir}/ip6tables-save ]]
-      then
-        iptables-restore ${fwDir}/iptables-save
-        ip6tables-restore ${fwDir}/ip6tables-save
-        rm -f ${confMarker}
-        echo "done."
-      else
-        echo "No saved rules found, aborting"
-        false
-      fi
-    fi
-  '';
-
-  # Run the startScript in a separate network namespace. If this succeeds,
-  # dump/restore the config into the default namespace. In case of error, the
-  # old firewall configuration stays active and CHECK_IPTABLES alerts.
-  atomicReload = writeShScript "firewall-atomic-reload" ''
-    touch ${confMarker}
-    generate=""
-    # Need to regenerate if either no dump file present...
-    if [[ ! -e ${fwDir}/iptables-save || ! -e ${fwDir}/ip6tables-save ]]
-    then
-      generate=1
-    fi
-    # ...or if the system wide configuration changed
-    if [[ ! -e ${fwDir}/startScript || \
-          $(< ${fwDir}/startScript ) != ${startScript} ]]; then
-      generate=1
-    fi
-    if [[ -n "$generate" ]]; then
-      ${generateRules} ${startScript}
-      echo -n ${startScript} > ${fwDir}/startScript
-    fi
-    iptables-restore ${fwDir}/iptables-save
-    ip6tables-restore ${fwDir}/ip6tables-save
-    rm -f ${confMarker}
-  '';
-
-  # Dump active firewall configuration just before shutdown so we can load it
-  # during system startup without having access to network connectivity.
-  atomicStop = writeShScript "firewall-atomic-stop" ''
-    ${generateRules} ${startScript}
-    echo -n ${startScript} > ${fwDir}/startScript
-    ${stopScript}
   '';
 
   commonOptions = {
@@ -621,7 +543,8 @@ in
                      message = "This kernel does not support rpfilter"; }
                  ];
 
-    system.activationScripts.firewall = "install -d ${fwDir}";
+    # remove old firewall state management directory
+    system.activationScripts.firewall = "rm -rf /var/lib/firewall";
 
     systemd.services.firewall = {
       description = "Firewall";
@@ -643,10 +566,9 @@ in
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = atomicStart;
-        ExecReload = atomicReload;
-        ExecStop = atomicStop;
-      };
+        ExecStart = "@${startScript} firewall-start";
+        ExecReload = "@${reloadScript} firewall-reload";
+        ExecStop = "@${stopScript} firewall-stop";      };
     };
 
   };
