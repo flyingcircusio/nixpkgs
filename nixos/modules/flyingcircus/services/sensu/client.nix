@@ -362,7 +362,7 @@ in {
       journal = {
         notification = "Journal errors in the last 10 minutes";
         command = "check_journal -j ${systemd}/bin/journalctl " +
-          "https://bitbucket.org/flyingcircus/fc-logcheck-config/raw/tip/nixos-journal.yaml";
+          "https://gitlab.flyingcircus.io/flyingcircus/fc-logcheck-config/raw/master/nixos-journal.yaml";
         interval = 600;
       };
       journal_file = {
