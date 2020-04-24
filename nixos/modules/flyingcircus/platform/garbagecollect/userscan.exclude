@@ -68,6 +68,7 @@ redis/*.rdb
 *.rpm
 *.rss
 *.sock
+*.socket
 solr/data/
 *.spl
 *.sql
