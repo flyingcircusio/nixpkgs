@@ -60,6 +60,7 @@
         pwgen
         python2Full
         python34
+        python36
         virtualenv_16
         ripgrep
         screen
