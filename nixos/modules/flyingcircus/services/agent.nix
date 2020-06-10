@@ -95,9 +95,13 @@ in {
           KillMode = "none";
         };
         path = with pkgs; [
-          fcmanage
-          xfsprogs
+          bzip2
           config.system.build.nixos-rebuild
+          fcmanage
+          gnutar
+          gzip
+          xfsprogs
+          xz
         ];
 
         # This configuration is stolen from NixOS' own automatic updater.
