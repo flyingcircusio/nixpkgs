@@ -214,17 +214,17 @@ in
                     StateDirectory = lpath;
                     StateDirectoryMode = rights;
                     WorkingDirectory = "/var/lib/${lpath}";
-                    ExecStartPre = 
-                      let 
+                    ExecStartPre =
+                      let
                         script = pkgs.writeScript "acme-pre-start" ''
                           #!${pkgs.runtimeShell} -e
                           mkdir -p ${acmeChallengeDir}
                           chown ${data.user}:${data.group} ${acmeChallengeDir}
                           touch ${acmeChallengeDir}/${checkFile}
                           for x in 1 2 3 4 5; do
-                            echo "Checking if web server is serving the challenge dir..." 
-                            ${pkgs.curl}/bin/curl --insecure --output /dev/null --silent --head --fail \
-                              https://${cert}/.well-known/acme-challenge/${checkFile} &&
+                            echo "Checking if web server is serving the challenge dir..."
+                            ${pkgs.curl}/bin/curl --output /dev/null --silent --head --fail \
+                              http://${cert}/.well-known/acme-challenge/${checkFile} &&
                               rm ${acmeChallengeDir}/${checkFile} &&
                               exit 0
 
@@ -236,9 +236,9 @@ in
                         '';
                       in
                         "+${script}";
-                    
+
                     ExecStart = "${pkgs.simp_le}/bin/simp_le ${escapeShellArgs cmdline}";
-                    ExecStopPost = 
+                    ExecStopPost =
                       let
                         script = pkgs.writeScript "acme-post-stop" ''
                           #!${pkgs.runtimeShell} -e
