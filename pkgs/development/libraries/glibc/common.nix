@@ -97,6 +97,16 @@ stdenv.mkDerivation ({
       ./CVE-2018-11236.patch
       # https://sourceware.org/git/gitweb.cgi?p=glibc.git;h=f51c8367685dc888a02f7304c729ed5277904aff
       ./CVE-2018-11237.patch
+      (fetchurl {
+        name = "CVE-2020-10029.patch";
+        url = "https://sourceware.org/git/?p=glibc.git;a=patch;h=9333498794cde1d5cca518badf79533a24114b6f";
+        sha256 = "1nf5iyrqflz2yp8hjvx9k25rkszvsc05a456zh40dbf4hs0c1ywi";
+      })
+      (fetchurl {
+        name = "CVE-2020-1752.patch";
+        url = "https://sourceware.org/git/?p=glibc.git;a=patch;h=ddc650e9b3dc916eab417ce9f79e67337b05035c";
+        sha256 = "0mwbsigsrkmykvs1nriyg8fp2s0kv9sr9dxyv3hz2sqvm1gz0z63";
+      })
     ]
     ++ lib.optional stdenv.isx86_64 ./fix-x64-abi.patch
     ++ lib.optional stdenv.hostPlatform.isMusl ./fix-rpc-types-musl-conflicts.patch
