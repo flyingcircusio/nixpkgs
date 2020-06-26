@@ -94,6 +94,7 @@ in {
       serviceConfig = {
         User = "uchiwa";
         ExecStart = "${uchiwa}/bin/uchiwa -c ${uchiwa_json} -p ${uchiwa}/public";
+        Restart = "always";
       };
     };
 
