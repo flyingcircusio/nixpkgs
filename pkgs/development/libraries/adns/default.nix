@@ -1,10 +1,11 @@
 { stdenv, fetchurl }:
 
 let
-  version = "1.5.1";
+  version = "1.5.2";
 in
 stdenv.mkDerivation {
-  name = "adns-${version}";
+  pname = "adns";
+  inherit version;
 
   src = fetchurl {
     urls = [
@@ -12,7 +13,7 @@ stdenv.mkDerivation {
       "ftp://ftp.chiark.greenend.org.uk/users/ian/adns/adns-${version}.tar.gz"
       "mirror://gnu/adns/adns-${version}.tar.gz"
     ];
-    sha256 = "1ssfh94ck6kn98nf2yy6743srpgqgd167va5ja3bwx42igqjc42v";
+    sha256 = "0z9ambw4pjnvwhn4bhxbrh20zpjsfj1ixm2lxa8x1x6w36g3ip6q";
   };
 
   preConfigure =
@@ -26,7 +27,7 @@ stdenv.mkDerivation {
   '';
 
   meta = {
-    homepage = http://www.chiark.greenend.org.uk/~ian/adns/;
+    homepage = "http://www.chiark.greenend.org.uk/~ian/adns/";
     description = "Asynchronous DNS Resolver Library";
     license = stdenv.lib.licenses.lgpl2;
 
