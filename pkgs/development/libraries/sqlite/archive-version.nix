@@ -1,7 +1,7 @@
 lib: version:
 
 with lib;
-  
+
 let
   fragments = splitString "." version;
   major = head fragments;
