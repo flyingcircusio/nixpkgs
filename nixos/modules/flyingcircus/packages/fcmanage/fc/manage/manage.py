@@ -29,7 +29,8 @@ ACTIVATE = """\
 set -e
 nix-channel --add {url} nixos
 nix-channel --update nixos
-nixos-rebuild switch
+# Retry once in case nixos-build fails e.g. due to updates to Nix itself
+nixos-rebuild switch || nixos-rebuild switch
 nix-channel --remove next
 """
 
