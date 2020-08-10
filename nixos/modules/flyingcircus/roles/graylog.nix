@@ -81,6 +81,14 @@ let
     fclib.listServiceAddresses config "loghost-server" ++
     fclib.listServiceAddresses config "graylog-server";
 
+  logTargets = lib.unique (
+    # Pick one of the regular graylog servers ...
+    (if (length glNodes > 0) then
+      [(head glNodes)] else []) ++
+
+    # ... and add the central one (if it exists).
+    (fclib.listServiceAddresses config "loghost-location-server"));
+
   replSetName = if cfg.cluster then "graylog" else "";
 
   isMaster =
@@ -184,7 +192,6 @@ in
 
     (mkIf cfg.enable {
       environment.systemPackages = [ logstashSSLHelper ];
-
 
       networking.firewall.allowedTCPPorts = [ 9000 9002 ];
 
@@ -591,15 +598,13 @@ in
 
       })
 
-    (mkIf (builtins.length glNodes > 0) {
-      # Forward all syslog to graylog, if there is one in the RG.
-      flyingcircus.syslog.extraRules = ''
-        *.* @${builtins.head glNodes}:${toString cfg.syslogInputPort};RSYSLOG_SyslogProtocol23Format
-      '';
+    (mkIf (length logTargets > 0) {
+      # Forward all syslog to graylog, if there is one.
+      flyingcircus.syslog.extraRules = concatStringsSep "\n"
+              (map (target: "*.* @${target}:${toString cfg.syslogInputPort};RSYSLOG_SyslogProtocol23Format") logTargets);
     })
 
     {
-
       flyingcircus.roles.statshost.prometheusMetricRelabel = [
         {
           source_labels = [ "__name__" ];
