@@ -50,10 +50,10 @@ in {
     sourceVersion = {
       major = "2";
       minor = "7";
-      patch = "17";
+      patch = "18";
       suffix = "";
     };
-    sha256 = "0hds28cg226m8j8sr394nm9yc4gxhvlv109w0avsf2mxrlrz0hsd";
+    sha256 = "0hzgxl94hnflis0d6m4szjx0b52gah7wpmcg5g00q7am6xwhwb5n";
     inherit (darwin) CF configd;
     inherit passthruFun;
   };
@@ -76,10 +76,10 @@ in {
     sourceVersion = {
       major = "3";
       minor = "6";
-      patch = "9";
+      patch = "11";
       suffix = "";
     };
-    sha256 = "1nkh70azbv866aw5a9bbxsxarsf40233vrzpjq17z3rz9ramybsy";
+    sha256 = "197xqkb7bra6dz7zbxpym4z58zdzbr2xs5rmy9gpm4z3qk5vs7kl";
     inherit (darwin) CF configd;
     inherit passthruFun;
   };
@@ -89,10 +89,10 @@ in {
     sourceVersion = {
       major = "3";
       minor = "7";
-      patch = "4";
+      patch = "8";
       suffix = "";
     };
-    sha256 = "0gxiv5617zd7dnqm5k9r4q2188lk327nf9jznwq9j6b8p0s92ygv";
+    sha256 = "0qsahmqzm5r9ph8f7zizdw6vqbfv367lgy4xz0vh0grn9d0479a3";
     inherit (darwin) CF configd;
     inherit passthruFun;
   };
