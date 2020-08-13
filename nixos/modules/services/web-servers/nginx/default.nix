@@ -707,8 +707,7 @@ in
     };
 
     system.activationScripts.nginx-reload-check = lib.stringAfter [ "resolvconf" ] ''
-      ${pkgs.procps}/bin/pgrep nginx > /dev/null || nginx_running=$?
-      if [[ ! -n $nginx_running ]]; then 
+      if ${pkgs.procps}/bin/pgrep nginx &> /dev/null; then 
         nginx_check_msg=$(${checkConfigCmd} 2>&1) || rc=$?
 
         if [[ -n $rc ]]; then
