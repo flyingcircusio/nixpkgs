@@ -1,4 +1,4 @@
-{ stdenv, buildPackages, fetchurl, fetchpatch, flex, cracklib, db4 }:
+{ stdenv, buildPackages, fetchurl, fetchpatch, flex, cracklib, db4, audit }:
 
 stdenv.mkDerivation rec {
   name = "linux-pam-${version}";
@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ flex ];
 
-  buildInputs = [ cracklib db4 ];
+  buildInputs = [ cracklib db4 audit ];
 
   enableParallelBuilding = true;
 
