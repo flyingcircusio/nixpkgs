@@ -707,11 +707,14 @@ in
     };
 
     system.activationScripts.nginx-reload-check = lib.stringAfter [ "resolvconf" ] ''
-      nginx_check_msg=$(${checkConfigCmd} 2>&1) || rc=$?
-      if [[ -n $rc ]]; then
-        printf "\033[0;31mWarning: \033[0mNginx config is invalid at this point:\n$nginx_check_msg\n"
-        echo Reload may still work if missing Let\'s Encrypt SSL certs are the reason, for example.
-        echo Please check the output of journalctl -eu nginx
+      if ${pkgs.procps}/bin/pgrep nginx &> /dev/null; then 
+        nginx_check_msg=$(${checkConfigCmd} 2>&1) || rc=$?
+
+        if [[ -n $rc ]]; then
+          printf "\033[0;31mWarning: \033[0mNginx config is invalid at this point:\n$nginx_check_msg\n"
+          echo Reload may still work if missing Let\'s Encrypt SSL certs are the reason, for example.
+          echo Please check the output of journalctl -eu nginx
+        fi
       fi
     '';
 
