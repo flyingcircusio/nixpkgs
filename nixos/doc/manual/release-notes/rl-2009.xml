@@ -66,6 +66,12 @@
    </listitem>
    <listitem>
     <para>
+     Python 3.5 has reached its upstream EOL at the end of September 2020: it
+     has been removed from the list of available packages.
+    </para>
+   </listitem>
+   <listitem>
+    <para>
      Two new options, <link linkend="opt-services.openssh.authorizedKeysCommand">authorizedKeysCommand</link>
      and <link linkend="opt-services.openssh.authorizedKeysCommandUser">authorizedKeysCommandUser</link>, have
      been added to the <literal>openssh</literal> module. If you have <literal>AuthorizedKeysCommand</literal>
@@ -1382,8 +1388,10 @@ services.transmission.settings.rpc-bind-address = "0.0.0.0";
    </listitem>
    <listitem>
     <para>
-     The <literal>fontconfig</literal> module stopped generating fontconfig 2.10.x config and cache.
-     Fontconfig 2.10.x was removed from Nixpkgs - it hasn't been used in any nixpkgs package anymore.
+     The <literal>fontconfig</literal> module stopped generating config and cache files for fontconfig 2.10.x, the <filename>/etc/fonts/fonts.conf</filename> now belongs to the latest fontconfig, just like on other Linux distributions, and we will <link xlink:href="https://github.com/NixOS/nixpkgs/pull/95358">no longer</link> be versioning the config directories.
+    </para>
+    <para>
+     Fontconfig 2.10.x was removed from Nixpkgs since it hasn’t been used in any Nixpkgs package for years now.
     </para>
    </listitem>
    <listitem>
@@ -1472,6 +1480,21 @@ services.transmission.settings.rpc-bind-address = "0.0.0.0";
         before upgrading.
     </para>
    </listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <listitem>
+      <para>
+        For AMD GPUs, Vulkan can now be used by adding <literal>amdvlk</literal>
+        to <literal>hardware.opengl.extraPackages</literal>.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Similarly, still for AMD GPUs, the ROCm OpenCL stack can now be used by adding
+        <literal>rocm-opencl-icd</literal> to
+        <literal>hardware.opengl.extraPackages</literal>.
+      </para>
+    </listitem>
   </itemizedlist>
  </section>
 </section>
