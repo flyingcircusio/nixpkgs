@@ -465,11 +465,10 @@ in
             [dms wms]
           );
 
-    # Make xsessions and wayland sessions installed at
-    # /run/current-system/sw/share as some programs
-    # have behavior that depends on them being installed
-    environment.systemPackages = [
-      cfg.displayManager.sessionData.desktops
+    # Make xsessions and wayland sessions available in XDG_DATA_DIRS
+    # as some programs have behavior that depends on them being present
+    environment.sessionVariables.XDG_DATA_DIRS = [
+      "${cfg.displayManager.sessionData.desktops}/share"
     ];
   };
 

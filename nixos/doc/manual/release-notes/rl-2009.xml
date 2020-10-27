@@ -889,8 +889,8 @@ systemd.services.nginx.serviceConfig.ReadWritePaths = [ "/var/www" ];
    <listitem>
      <para>
        In addition to the hostname, the fully qualified domain name (FQDN),
-       which consists of <literal>${cfg.hostName}</literal> and
-       <literal>${cfg.domain}</literal> is now added to
+       which consists of <literal>${networking.hostName}</literal> and
+       <literal>${networking.domain}</literal> is now added to
        <literal>/etc/hosts</literal>, to allow local FQDN resolution, as used by the
        <literal>hostname --fqdn</literal> command and other applications that
        try to determine the FQDN. These new entries take precedence over entries
@@ -910,6 +910,10 @@ systemd.services.nginx.serviceConfig.ReadWritePaths = [ "/var/www" ];
        or digit, and have as interior characters only letters, digits, and
        hyphen. The maximum length is 63 characters. Additionally it is
        recommended to only use lower-case characters.
+       If (e.g. for legacy reasons) a FQDN is required as the Linux kernel network node hostname
+       (<literal>uname --nodename</literal>) the option
+       <literal>boot.kernel.sysctl."kernel.hostname"</literal>
+       can be used as a workaround (but be aware of the 64 character limit).
      </para>
    </listitem>
    <listitem>
@@ -939,6 +943,13 @@ systemd.services.nginx.serviceConfig.ReadWritePaths = [ "/var/www" ];
      In the <literal>resilio</literal> module, <xref linkend="opt-services.resilio.httpListenAddr"/> has been changed to listen to <literal>[::1]</literal> instead of <literal>0.0.0.0</literal>.
      </para>
    </listitem>
+     <listitem>
+       <para>
+         <literal>sslh</literal> has been updated to version
+           <literal>1.21</literal>. The <literal>ssl</literal> probe must be
+             renamed to <literal>tls</literal> in <xref linkend="opt-services.sslh.appendConfig"/>.
+    </para>
+  </listitem>
    <listitem>
     <para>
      Users of <link xlink:href="http://openafs.org">OpenAFS 1.6</link> must
@@ -1147,6 +1158,13 @@ CREATE ROLE postgres LOGIN SUPERUSER;
    </listitem>
    <listitem>
     <para>
+     The <literal>hardware.nvidia.optimus_prime.enable</literal> service has been renamed to
+     <literal>hardware.nvidia.prime.sync.enable</literal> and has many new enhancements.
+     Related nvidia prime settings may have also changed.
+    </para>
+   </listitem>
+   <listitem>
+    <para>
      The package <package>nextcloud17</package> has been removed and <package>nextcloud18</package> was marked as insecure
      since both of them will <link xlink:href="https://docs.nextcloud.com/server/19/admin_manual/release_schedule.html">
      will be EOL (end of life) within the lifetime of 20.09</link>.
@@ -1168,6 +1186,13 @@ CREATE ROLE postgres LOGIN SUPERUSER;
        </para>
       </listitem>
      </itemizedlist>
+    </para>
+   </listitem>
+   <listitem>
+    <para>
+      The GNOME desktop manager no longer default installs <package>gnome3.epiphany</package>.
+      It was chosen to do this as it has a usability breaking issue (see issue <link xlink:href="https://github.com/NixOS/nixpkgs/issues/98819">#98819</link>)
+      that makes it unsuitable to be a default app.
     </para>
    </listitem>
   </itemizedlist>
@@ -1373,6 +1398,8 @@ services.transmission.settings.rpc-bind-address = "0.0.0.0";
      <package>nextcloud18</package> before upgrading to <package>nextcloud19</package>
      since Nextcloud doesn't support upgrades across multiple major versions.
     </para>
+   </listitem>
+   <listitem>
      <para>
        The <literal>nixos-run-vms</literal> script now deletes the
        previous run machines states on test startup. You can use the
