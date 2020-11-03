@@ -162,8 +162,11 @@ in
 
     '';
 
-    system.activationScripts.fcio-homedirpermissions = lib.stringAfter [ "users" ]
-      (builtins.concatStringsSep "\n" (home_dir_permissions cfg.userdata));
+    system.activationScripts.homedirs =
+      lib.stringAfter [ "users" ]
+      ((lib.concatStringsSep "\n" (home_dir_permissions cfg.userdata)) + ''
+        find /home -type l -name box -print0 | xargs -r0 rm
+      '');
 
   };
 }
