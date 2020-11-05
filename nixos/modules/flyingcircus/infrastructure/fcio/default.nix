@@ -16,7 +16,6 @@ in
   ];
 
   environment.systemPackages = with pkgs; [
-    fcbox
     fcmaintenance
   ];
 
@@ -105,7 +104,7 @@ in
   users.users.root = {
     initialHashedPassword = "*";
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHvjFPzQjaDFiBVW44hRbZvLNf1BCAXjfDENi1YO7W2R ctheune"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA/lhMiMJBednrahZUJvb+dZVhLysbcuGf4p2J4D6MU/ ctheune@fourteen-3.local"
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSejGFORJ7hlFraV3caVir3rWlo/QcsWptWrukk2C7eaGu/8tXMKgPtBHYdk4DYRi7EcPROllnFVzyVTLS/2buzfIy7XDjn7bwHzlHoBHZ4TbC9auqW3j5oxTDA4s2byP6b46Dh93aEP9griFideU/J00jWeHb27yIWv+3VdstkWTiJwxubspNdDlbcPNHBGOE+HNiAnRWzwyj8D0X5y73MISC3pSSYnXJWz+fI8IRh5LSLYX6oybwGX3Wu+tlrQjyN1i0ONPLxo5/YDrS6IQygR21j+TgLXaX8q8msi04QYdvnOqk1ntbY4fU8411iqoSJgCIG18tOgWTTOcBGcZX directory@directory.fcio.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB6MKl9D9mzhuB6/sQXNCEW5qq4R7mXlpnxi+QZSGi57 root/ckauhaus@fcio.net"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKqKaOCYLUxtjAs9e3amnTRH5NM2j0kjLOE+5ZGy9/W4 zagy@drrr.local"

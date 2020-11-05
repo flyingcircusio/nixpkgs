@@ -33,9 +33,6 @@ let
     in
       concatMapStringsSep " " clientWithFlags service_clients;
 
-  boxServer = findFirst (s: s.service == "box-server") {} cfg.enc_services;
-  boxMount = "/mnt/auto/box";
-
 in
 {
   options = {
@@ -90,32 +87,5 @@ in
         ${pkgs.nfs-utils}/bin/exportfs -ra
       '';
     })
-
-    (mkIf (boxServer ? address) (
-      let
-        humans = filter
-          (u: u.class == "human" && u ? "home_directory")
-          cfg.userdata;
-        userHomes = listToAttrs
-          (map (u: nameValuePair u.uid u.home_directory) humans);
-      in
-      {
-        fileSystems = listToAttrs
-          (map
-            (user: nameValuePair
-              "${boxMount}/${user}"
-              {
-                device = "${boxServer.address}:/srv/nfs/box/${user}";
-                fsType = "nfs4";
-                options = mountopts;
-                noCheck = true;
-              })
-            (attrNames userHomes));
-          systemd.tmpfiles.rules =
-            [ "d ${boxMount}" ] ++
-            mapAttrsToList
-              (user: home: "L ${home}/box - - - - ${boxMount}/${user}")
-              userHomes;
-      }))
   ];
 }

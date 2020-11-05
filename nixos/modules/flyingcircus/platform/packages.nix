@@ -79,6 +79,5 @@
     ] ++
     lib.optional (!config.services.postgresql.enable) pkgs.postgresql;
 
-    security.setuidPrograms = [ "box" ];
   };
 }
