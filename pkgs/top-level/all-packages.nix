@@ -2502,7 +2502,9 @@ in
     inherit (llvmPackages) openmp;
   };
 
-  bacula = callPackage ../tools/backup/bacula { };
+  bacula = callPackage ../tools/backup/bacula {
+    inherit (darwin.apple_sdk.frameworks) CoreFoundation IOKit;
+  };
 
   bareos = callPackage ../tools/backup/bareos { };
 
@@ -2687,16 +2689,13 @@ in
 
   circus = callPackage ../tools/networking/circus { };
 
-  citrix_workspace = citrix_workspace_20_09_0;
+  citrix_workspace = citrix_workspace_20_10_0;
 
   inherit (callPackage ../applications/networking/remote/citrix-workspace { })
-    citrix_workspace_19_6_0
-    citrix_workspace_19_8_0
-    citrix_workspace_19_10_0
-    citrix_workspace_19_12_0
     citrix_workspace_20_04_0
     citrix_workspace_20_06_0
     citrix_workspace_20_09_0
+    citrix_workspace_20_10_0
   ;
 
   citra = libsForQt5.callPackage ../misc/emulators/citra { };
@@ -7858,8 +7857,6 @@ in
 
   udunits = callPackage ../development/libraries/udunits { };
 
-  uemacs = callPackage ../applications/editors/uemacs { };
-
   uftp = callPackage ../servers/uftp {};
 
   uhttpmock = callPackage ../development/libraries/uhttpmock { };
@@ -10280,6 +10277,7 @@ in
   }));
   spidermonkey_60 = callPackage ../development/interpreters/spidermonkey/60.nix { };
   spidermonkey_68 = callPackage ../development/interpreters/spidermonkey/68.nix { };
+  spidermonkey_78 = callPackage ../development/interpreters/spidermonkey/78.nix { };
   spidermonkey = spidermonkey_38;
 
   ssm-agent = callPackage ../applications/networking/cluster/ssm-agent { };
@@ -17700,6 +17698,10 @@ in
     inherit kernel;
     inherit (kernel) stdenv; # in particular, use the same compiler by default
 
+    # to help determine module compatibility
+    inherit (kernel) isXen isZen isHardened isLibre;
+    inherit (kernel) kernelOlder kernelAtLeast;
+
     # Obsolete aliases (these packages do not depend on the kernel).
     inherit (pkgs) odp-dpdk pktgen; # added 2018-05
 
@@ -17962,6 +17964,7 @@ in
         kernelPatches.hardened.${kernel.meta.branch}
       ];
       modDirVersionArg = kernel.modDirVersion + "-hardened";
+      isHardened = true;
   });
 
   linuxPackages_hardened = recurseIntoAttrs (hardenedLinuxPackagesFor pkgs.linux { });
@@ -24604,9 +24607,7 @@ in
 
   arena = callPackage ../games/arena {};
 
-  arx-libertatis = libsForQt5.callPackage ../games/arx-libertatis {
-    stdenv = gcc6Stdenv;
-  };
+  arx-libertatis = libsForQt5.callPackage ../games/arx-libertatis { };
 
   asc = callPackage ../games/asc {
     lua = lua5_1;
