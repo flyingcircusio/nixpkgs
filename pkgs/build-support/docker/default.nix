@@ -31,6 +31,7 @@
   writeScript,
   writeText,
   writePython3,
+  system,  # Note: This is the cross system we're compiling for
 }:
 
 # WARNING: this API is unstable and may be subject to backwards-incompatible changes in the future.
@@ -48,13 +49,23 @@ let
     # A user is required by nix
     # https://github.com/NixOS/nix/blob/9348f9291e5d9e4ba3c4347ea1b235640f54fd79/src/libutil/util.cc#L478
     export USER=nobody
-    ${nix}/bin/nix-store --load-db < ${closureInfo {rootPaths = contentsList;}}/registration
+    ${buildPackages.nix}/bin/nix-store --load-db < ${closureInfo {rootPaths = contentsList;}}/registration
 
     mkdir -p nix/var/nix/gcroots/docker/
     for i in ${lib.concatStringsSep " " contentsList}; do
     ln -s $i nix/var/nix/gcroots/docker/$(basename $i)
     done;
   '';
+
+  # Map nixpkgs architecture to Docker notation
+  # Reference: https://github.com/docker-library/official-images#architectures-other-than-amd64
+  getArch = nixSystem: {
+    aarch64-linux = "arm64v8";
+    armv7l-linux = "arm32v7";
+    x86_64-linux = "amd64";
+    powerpc64le-linux = "ppc64le";
+    i686-linux = "i386";
+  }.${nixSystem} or "Can't map Nix system ${nixSystem} to Docker architecture notation. Please check that your input and your requested build are correct or update the mapping in Nixpkgs.";
 
 in
 rec {
@@ -72,7 +83,7 @@ rec {
     , imageDigest
     , sha256
     , os ? "linux"
-    , arch ? buildPackages.go.GOARCH
+    , arch ? getArch system
 
       # This is used to set name to the pulled image
     , finalImageName ? imageName
@@ -340,7 +351,7 @@ rec {
       # Tar up the layer and throw it into 'layer.tar'.
       echo "Packing layer..."
       mkdir $out
-      tarhash=$(tar -C layer --hard-dereference --sort=name --mtime="@$SOURCE_DATE_EPOCH" --owner=${toString uid} --group=${toString gid} -cf - . | tee $out/layer.tar | tarsum)
+      tarhash=$(tar -C layer --hard-dereference --sort=name --mtime="@$SOURCE_DATE_EPOCH" --owner=${toString uid} --group=${toString gid} -cf - . | tee -p $out/layer.tar | tarsum)
 
       # Add a 'checksum' field to the JSON, with the value set to the
       # checksum of the tarball.
@@ -425,7 +436,7 @@ rec {
         echo "Packing layer..."
         mkdir -p $out
         tarhash=$(tar -C layer --hard-dereference --sort=name --mtime="@$SOURCE_DATE_EPOCH" -cf - . |
-                    tee $out/layer.tar |
+                    tee -p $out/layer.tar |
                     ${tarsum}/bin/tarsum)
 
         cat ${baseJson} | jshon -s "$tarhash" -i checksum > $out/json
@@ -443,7 +454,7 @@ rec {
       runCommand "${name}.tar.gz" {
         inherit (stream) imageName;
         passthru = { inherit (stream) imageTag; };
-        buildInputs = [ pigz ];
+        nativeBuildInputs = [ pigz ];
       } "${stream} | pigz -nT > $out";
 
   # 1. extract the base image
@@ -488,7 +499,7 @@ rec {
       baseJson = let
           pure = writeText "${baseName}-config.json" (builtins.toJSON {
             inherit created config;
-            architecture = buildPackages.go.GOARCH;
+            architecture = getArch system;
             os = "linux";
           });
           impure = runCommand "${baseName}-config.json"
@@ -715,31 +726,44 @@ rec {
       streamScript = writePython3 "stream" {} ./stream_layered_image.py;
       baseJson = writeText "${name}-base.json" (builtins.toJSON {
          inherit config;
-         architecture = buildPackages.go.GOARCH;
+         architecture = getArch system;
          os = "linux";
       });
-      customisationLayer = runCommand "${name}-customisation-layer" { inherit extraCommands; } ''
-        cp -r ${contentsEnv}/ $out
 
-        if [[ -n $extraCommands ]]; then
-          chmod u+w $out
-          (cd $out; eval "$extraCommands")
-        fi
-      '';
-      contentsEnv = symlinkJoin {
-        name = "${name}-bulk-layers";
-        paths = if builtins.isList contents
-          then contents
-          else [ contents ];
+      contentsList = if builtins.isList contents then contents else [ contents ];
+
+      # We store the customisation layer as a tarball, to make sure that
+      # things like permissions set on 'extraCommands' are not overriden
+      # by Nix. Then we precompute the sha256 for performance.
+      customisationLayer = symlinkJoin {
+        name = "${name}-customisation-layer";
+        paths = contentsList;
+        inherit extraCommands;
+        postBuild = ''
+          mv $out old_out
+          (cd old_out; eval "$extraCommands" )
+
+          mkdir $out
+
+          tar \
+            --owner 0 --group 0 --mtime "@$SOURCE_DATE_EPOCH" \
+            --hard-dereference \
+            -C old_out \
+            -cf $out/layer.tar .
+
+          sha256sum $out/layer.tar \
+            | cut -f 1 -d ' ' \
+            > $out/checksum
+        '';
       };
 
-      # NOTE: the `closures` parameter is a list of closures to include.
-      # The TOP LEVEL store paths themselves will never be present in the
-      # resulting image. At this time (2020-06-18) none of these layers
-      # are appropriate to include, as they are all created as
-      # implementation details of dockerTools.
-      closures = [ baseJson contentsEnv ];
-      overallClosure = writeText "closure" (lib.concatStringsSep " " closures);
+      closureRoots = [ baseJson ] ++ contentsList;
+      overallClosure = writeText "closure" (lib.concatStringsSep " " closureRoots);
+
+      # These derivations are only created as implementation details of docker-tools,
+      # so they'll be excluded from the created images.
+      unnecessaryDrvs = [ baseJson overallClosure ];
+
       conf = runCommand "${name}-conf.json" {
         inherit maxLayers created;
         imageName = lib.toLower name;
@@ -749,11 +773,8 @@ rec {
             else
               lib.head (lib.strings.splitString "-" (baseNameOf conf.outPath));
         paths = referencesByPopularity overallClosure;
-        buildInputs = [ jq ];
+        nativeBuildInputs = [ jq ];
       } ''
-        paths() {
-          cat $paths ${lib.concatMapStringsSep " " (path: "| (grep -v ${path} || true)") (closures ++ [ overallClosure ])}
-        }
         ${if (tag == null) then ''
           outName="$(basename "$out")"
           outHash=$(echo "$outName" | cut -d - -f 1)
@@ -767,6 +788,12 @@ rec {
         if [[ "$created" != "now" ]]; then
             created="$(date -Iseconds -d "$created")"
         fi
+
+        paths() {
+          cat $paths ${lib.concatMapStringsSep " "
+                         (path: "| (grep -v ${path} || true)")
+                         unnecessaryDrvs}
+        }
 
         # Create $maxLayers worth of Docker Layers, one layer per store path
         # unless there are more paths than $maxLayers. In that case, create
@@ -803,8 +830,14 @@ rec {
       '';
       result = runCommand "stream-${name}" {
         inherit (conf) imageName;
-        passthru = { inherit (conf) imageTag; };
-        buildInputs = [ makeWrapper ];
+        passthru = {
+          inherit (conf) imageTag;
+
+          # Distinguish tarballs and exes at the Nix level so functions that
+          # take images can know in advance how the image is supposed to be used.
+          isExe = true;
+        };
+        nativeBuildInputs = [ makeWrapper ];
       } ''
         makeWrapper ${streamScript} $out --add-flags ${conf}
       '';
