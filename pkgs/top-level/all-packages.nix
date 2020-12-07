@@ -9659,6 +9659,8 @@ in
     inherit (darwin.apple_sdk.frameworks) Security;
   };
 
+  crate2nix = callPackage ../development/tools/rust/crate2nix { };
+
   maturin = callPackage ../development/tools/rust/maturin { };
   inherit (rustPackages) rls;
   rustfmt = rustPackages.rustfmt;
@@ -17927,7 +17929,7 @@ in
 
   # Update this when adding the newest kernel major version!
   # And update linux_latest_for_hardened below if the patches are already available
-  linuxPackages_latest = linuxPackages_5_8;
+  linuxPackages_latest = linuxPackages_5_9;
   linux_latest = linuxPackages_latest.kernel;
 
   # Realtime kernel packages.
@@ -17988,7 +17990,7 @@ in
   # Hardened Linux
   hardenedLinuxPackagesFor = kernel': overrides:
     let # Note: We use this hack since the hardened patches can lag behind and we don't want to delay updates:
-      linux_latest_for_hardened = pkgs.linux_5_8;
+      linux_latest_for_hardened = pkgs.linux_5_9;
       kernel = (if kernel' == pkgs.linux_latest then linux_latest_for_hardened else kernel').override overrides;
     in linuxPackagesFor (kernel.override {
       structuredExtraConfig = import ../os-specific/linux/kernel/hardened/config.nix {
@@ -27115,7 +27117,9 @@ in
 
   disnix = callPackage ../tools/package-management/disnix { };
 
-  dysnomia = callPackage ../tools/package-management/disnix/dysnomia (config.disnix or {});
+  dysnomia = callPackage ../tools/package-management/disnix/dysnomia (config.disnix or {
+    inherit (pythonPackages) supervisor;
+  });
 
   disnixos = callPackage ../tools/package-management/disnix/disnixos { };
 
