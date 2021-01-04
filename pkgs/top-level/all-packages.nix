@@ -228,6 +228,7 @@ in
 
   archiver = callPackage ../applications/misc/archiver { };
 
+  # It segfaults if it uses qt5.15
   digitalbitbox = libsForQt514.callPackage ../applications/misc/digitalbitbox { };
 
   grsync = callPackage ../applications/misc/grsync { };
@@ -1408,6 +1409,7 @@ in
 
   boringtun = callPackage ../tools/networking/boringtun { };
 
+  # Upstream recommends qt5.12 and it doesn't build with qt5.15
   boomerang = libsForQt512.callPackage ../development/tools/boomerang { };
 
   boost-build = callPackage ../development/tools/boost-build { };
@@ -2345,6 +2347,8 @@ in
 
   shell-hist = callPackage ../tools/misc/shell-hist { };
 
+  shellhub-agent = callPackage ../applications/networking/shellhub-agent { };
+
   simg2img = callPackage ../tools/filesystems/simg2img { };
 
   simplenes = callPackage ../misc/emulators/simplenes { };
@@ -2705,9 +2709,7 @@ in
 
   cmt = callPackage ../applications/audio/cmt {};
 
-  codimd = callPackage ../servers/web-apps/codimd {
-    nodejs = nodejs-12_x;
-  };
+  hedgedoc = callPackage ../servers/web-apps/hedgedoc { };
 
   colord = callPackage ../tools/misc/colord { };
 
@@ -5714,7 +5716,7 @@ in
   inherit (callPackage ../servers/nextcloud {})
     nextcloud17 nextcloud18 nextcloud19 nextcloud20;
 
-  nextcloud-client = libsForQt514.callPackage ../applications/networking/nextcloud-client { };
+  nextcloud-client = libsForQt5.callPackage ../applications/networking/nextcloud-client { };
 
   nextcloud-news-updater = callPackage ../servers/nextcloud/news-updater.nix { };
 
@@ -5737,8 +5739,15 @@ in
   noip = callPackage ../tools/networking/noip { };
 
   nomad = nomad_0_11;
-  nomad_0_11 = callPackage ../applications/networking/cluster/nomad/0.11.nix { };
-  nomad_0_12 = callPackage ../applications/networking/cluster/nomad/0.12.nix { };
+  # Nomad never updates major go versions within a release series and is unsupported
+  # on Go versions that it did not ship with. Due to historic bugs when compiled
+  # with different versions we pin Go for all versions.
+  nomad_0_11 = callPackage ../applications/networking/cluster/nomad/0.11.nix {
+    buildGoPackage = buildGo114Package;
+  };
+  nomad_0_12 = callPackage ../applications/networking/cluster/nomad/0.12.nix {
+    buildGoPackage = buildGo114Package;
+  };
 
   notable = callPackage ../applications/misc/notable { };
 
@@ -6504,7 +6513,7 @@ in
 
   qr-filetransfer = callPackage ../tools/networking/qr-filetransfer { };
 
-  qtikz = libsForQt514.callPackage ../applications/graphics/ktikz { };
+  qtikz = libsForQt5.callPackage ../applications/graphics/ktikz { };
 
   quickjs = callPackage ../development/interpreters/quickjs { };
 
@@ -6971,6 +6980,7 @@ in
 
   sleuthkit = callPackage ../tools/system/sleuthkit {};
 
+  # Not updated upstream since 2018, doesn't support qt newer than 5.12
   sleepyhead = libsForQt512.callPackage ../applications/misc/sleepyhead {};
 
   slirp4netns = callPackage ../tools/networking/slirp4netns/default.nix { };
@@ -16855,10 +16865,7 @@ in
   postgresql_jdbc = callPackage ../development/java-modules/postgresql_jdbc { };
 
   prom2json = callPackage ../servers/monitoring/prometheus/prom2json.nix { };
-  prometheus = callPackage ../servers/monitoring/prometheus {
-    buildGoPackage = buildGo114Package;
-    go = go_1_14;
-  };
+  prometheus = callPackage ../servers/monitoring/prometheus { };
   prometheus-alertmanager = callPackage ../servers/monitoring/prometheus/alertmanager.nix { };
   prometheus-apcupsd-exporter = callPackage ../servers/monitoring/prometheus/apcupsd-exporter.nix { };
   prometheus-aws-s3-exporter = callPackage ../servers/monitoring/prometheus/aws-s3-exporter.nix { };
@@ -21476,7 +21483,7 @@ in
 
   kondo = callPackage ../applications/misc/kondo { };
 
-  konversation = libsForQt514.callPackage ../applications/networking/irc/konversation { };
+  konversation = libsForQt5.callPackage ../applications/networking/irc/konversation { };
 
   kotatogram-desktop = libsForQt514.callPackage ../applications/networking/instant-messengers/telegram/kotatogram-desktop { };
 
@@ -22602,6 +22609,7 @@ in
 
   plexamp = callPackage ../applications/audio/plexamp { };
 
+  # Upstream says it supports only qt5.9 which is not packaged, and building with qt newer than 5.12 fails
   plex-media-player = libsForQt512.callPackage ../applications/video/plex-media-player { };
 
   plex-mpv-shim = python3Packages.callPackage ../applications/video/plex-mpv-shim { };
@@ -22757,7 +22765,7 @@ in
 
   qsstv = qt5.callPackage ../applications/radio/qsstv { };
 
-  qsyncthingtray = libsForQt514.callPackage ../applications/misc/qsyncthingtray { };
+  qsyncthingtray = libsForQt5.callPackage ../applications/misc/qsyncthingtray { };
 
   qstopmotion = libsForQt5.callPackage ../applications/video/qstopmotion {
     guvcview = guvcview.override {
@@ -23766,7 +23774,7 @@ in
 
   vkeybd = callPackage ../applications/audio/vkeybd {};
 
-  vlc = libsForQt514.callPackage ../applications/video/vlc {};
+  vlc = libsForQt5.callPackage ../applications/video/vlc {};
 
   vlc_qt5 = vlc;
 
@@ -25599,6 +25607,8 @@ in
     let
       mkPlasma5 = import ../desktops/plasma-5;
       attrs = {
+        # ATTN: The Qt version used in the NixOS Plasma module must be updated
+        # whenever this changes!
         inherit libsForQt5;
         inherit lib fetchurl;
         gconf = gnome2.GConf;
