@@ -565,7 +565,7 @@ in
     environment.extraInit =
       ''
         if [ -e "$HOME/.nix-defexpr/channels" ]; then
-          export NIX_PATH="$HOME/.nix-defexpr/channels''${NIX_PATH:+:$NIX_PATH}"
+          export NIX_PATH="$HOME/.nix-defexprschannels''${NIX_PATH:+:$NIX_PATH}"
         fi
       '';
 
