@@ -2693,7 +2693,7 @@ in
 
   circus = callPackage ../tools/networking/circus { };
 
-  citrix_workspace = citrix_workspace_20_12_0;
+  citrix_workspace = citrix_workspace_21_01_0;
 
   inherit (callPackage ../applications/networking/remote/citrix-workspace { })
     citrix_workspace_20_04_0
@@ -2701,6 +2701,7 @@ in
     citrix_workspace_20_09_0
     citrix_workspace_20_10_0
     citrix_workspace_20_12_0
+    citrix_workspace_21_01_0
   ;
 
   citra = libsForQt5.callPackage ../misc/emulators/citra { };
@@ -7038,6 +7039,8 @@ in
 
   ssh-chat = callPackage ../applications/networking/instant-messengers/ssh-chat { };
 
+  ssh-to-pgp = callPackage ../tools/security/ssh-to-pgp { };
+
   suricata = callPackage ../applications/networking/ids/suricata {
     python = python3;
   };
@@ -7587,8 +7590,6 @@ in
   unrpa = with python3Packages; toPythonApplication unrpa;
 
   untex = callPackage ../tools/text/untex { };
-
-  untrunc = callPackage ../tools/video/untrunc { };
 
   untrunc-anthwlock = callPackage ../tools/video/untrunc-anthwlock { };
 
@@ -9575,10 +9576,14 @@ in
   rust_1_45 = callPackage ../development/compilers/rust/1_45.nix {
     inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
   };
+  rust_1_49 = callPackage ../development/compilers/rust/1_49.nix {
+    inherit (darwin.apple_sdk.frameworks) CoreFoundation Security;
+  };
   rust = rust_1_45;
 
   rustPackages_1_44 = rust_1_44.packages.stable;
   rustPackages_1_45 = rust_1_45.packages.stable;
+  rustPackages_1_49 = rust_1_49.packages.stable;
   rustPackages = rustPackages_1_45;
 
   inherit (rustPackages) cargo clippy rustc rustPlatform;
@@ -12473,6 +12478,10 @@ in
       rev = "v${version}";
       sha256 = "09jz2fzv0zl5058s0g1cpnw87a2rgg8wnjwlygi18i2n9nn6m0ad";
     };
+    meta.knownVulnerabilities = [
+      "CVE-2020-12278"
+      "CVE-2020-12279"
+    ];
   });
 
   libgit2-glib = callPackage ../development/libraries/libgit2-glib { };
@@ -16415,7 +16424,7 @@ in
   gofish = callPackage ../servers/gopher/gofish { };
 
   grafana = callPackage ../servers/monitoring/grafana {
-    buildGoModule = buildGo114Module;
+    buildGoModule = buildGo115Module;
   };
 
   grafana-agent = callPackage ../servers/monitoring/grafana-agent { };
@@ -17692,14 +17701,7 @@ in
     ];
   };
 
-  linux_5_8 = callPackage ../os-specific/linux/kernel/linux-5.8.nix {
-    kernelPatches = [
-      kernelPatches.bridge_stp_helper
-      kernelPatches.request_key_helper
-    ];
-  };
-
-  linux_5_9 = callPackage ../os-specific/linux/kernel/linux-5.9.nix {
+  linux_5_10 = callPackage ../os-specific/linux/kernel/linux-5.10.nix {
     kernelPatches = [
       kernelPatches.bridge_stp_helper
       kernelPatches.request_key_helper
@@ -17940,7 +17942,7 @@ in
 
   # Update this when adding the newest kernel major version!
   # And update linux_latest_for_hardened below if the patches are already available
-  linuxPackages_latest = linuxPackages_5_9;
+  linuxPackages_latest = linuxPackages_5_10;
   linux_latest = linuxPackages_latest.kernel;
 
   # Realtime kernel packages.
@@ -17962,8 +17964,7 @@ in
   linuxPackages_4_14 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_4_14);
   linuxPackages_4_19 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_4_19);
   linuxPackages_5_4 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_4);
-  linuxPackages_5_8 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_8);
-  linuxPackages_5_9 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_9);
+  linuxPackages_5_10 = recurseIntoAttrs (linuxPackagesFor pkgs.linux_5_10);
 
   # When adding to the list above:
   # - Update linuxPackages_latest to the latest version
@@ -18001,7 +18002,7 @@ in
   # Hardened Linux
   hardenedLinuxPackagesFor = kernel': overrides:
     let # Note: We use this hack since the hardened patches can lag behind and we don't want to delay updates:
-      linux_latest_for_hardened = pkgs.linux_5_9;
+      linux_latest_for_hardened = pkgs.linux_5_10;
       kernel = (if kernel' == pkgs.linux_latest then linux_latest_for_hardened else kernel').override overrides;
     in linuxPackagesFor (kernel.override {
       structuredExtraConfig = import ../os-specific/linux/kernel/hardened/config.nix {
@@ -20620,7 +20621,6 @@ in
 
   firefoxPackages = recurseIntoAttrs (callPackage ../applications/networking/browsers/firefox/packages.nix {
     callPackage = pkgs.newScope {
-      inherit (rustPackages_1_44) cargo rustc;
       libpng = libpng_apng;
       python = python2;
       gnused = gnused_422;
@@ -22444,8 +22444,8 @@ in
   osmo = callPackage ../applications/office/osmo { };
 
   palemoon = callPackage ../applications/networking/browsers/palemoon {
-    # https://www.palemoon.org/sourcecode.shtml
-    stdenv = gcc7Stdenv;
+    # https://developer.palemoon.org/build/linux/
+    stdenv = gcc8Stdenv;
   };
 
   webbrowser = callPackage ../applications/networking/browsers/webbrowser {};
@@ -23205,8 +23205,6 @@ in
   spek = callPackage ../applications/audio/spek { };
 
   spotify = callPackage ../applications/audio/spotify {
-    libgcrypt = libgcrypt_1_5;
-    libpng = libpng12;
     curl = curl.override {
       sslSupport = false; gnutlsSupport = true;
     };
@@ -26902,10 +26900,7 @@ in
     nixFlakes;
 
   nixops = callPackage ../tools/package-management/nixops { };
-
-  nixops_1_6_1 = callPackage ../tools/package-management/nixops/nixops-v1_6_1.nix {};
-
-  nixopsUnstable = lowPrio (callPackage ../tools/package-management/nixops/unstable.nix { });
+  nixopsUnstable = nixops;
 
   nixops-dns = callPackage ../tools/package-management/nixops/nixops-dns.nix { };
 
