@@ -3,7 +3,7 @@
 buildGoModule rec {
   pname = "gitlab-workhorse";
 
-  version = "8.59.0";
+  version = "8.59.2";
 
   src = fetchFromGitLab {
     owner = "gitlab-org";
