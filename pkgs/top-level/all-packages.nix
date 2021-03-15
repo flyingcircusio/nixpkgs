@@ -554,7 +554,7 @@ in
 
   _1password = callPackage ../applications/misc/1password { };
 
-  _1password-gui = callPackage ../tools/security/1password-gui { };
+  _1password-gui = callPackage ../applications/misc/1password-gui { };
 
   _6tunnel = callPackage ../tools/networking/6tunnel { };
 
@@ -2155,7 +2155,7 @@ in
 
   long-shebang = callPackage ../misc/long-shebang {};
 
-  lowdown = callPackage ../tools/typesetting/lowdown { };
+  inherit (callPackage ../tools/typesetting/lowdown { }) lowdown lowdown_0_8;
 
   numatop = callPackage ../os-specific/linux/numatop { };
 
@@ -5713,7 +5713,7 @@ in
   grocy = callPackage ../servers/grocy { };
 
   inherit (callPackage ../servers/nextcloud {})
-    nextcloud17 nextcloud18 nextcloud19 nextcloud20;
+    nextcloud17 nextcloud18 nextcloud19 nextcloud20 nextcloud21;
 
   nextcloud-client = libsForQt5.callPackage ../applications/networking/nextcloud-client { };
 
@@ -9693,9 +9693,10 @@ in
   rust-cbindgen = callPackage ../development/tools/rust/cbindgen {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
-  rust-cbindgen_0_15 = callPackage ../development/tools/rust/cbindgen/0_15.nix {
+  rust-cbindgen_latest = callPackage ../development/tools/rust/cbindgen/0_17.nix {
     inherit (darwin.apple_sdk.frameworks) Security;
   };
+
 
   rustup = callPackage ../development/tools/rust/rustup {
     inherit (darwin.apple_sdk.frameworks) CoreServices Security;
