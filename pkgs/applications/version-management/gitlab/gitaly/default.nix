@@ -33,7 +33,7 @@ let
       };
   };
 in buildGoModule rec {
-  version = "13.8.5";
+  version = "13.8.6";
   pname = "gitaly";
 
   src = fetchFromGitLab {
