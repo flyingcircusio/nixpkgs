@@ -154,7 +154,7 @@ gem 'wikicloth', '0.8.1'
 gem 'asciidoctor', '~> 2.0.10'
 gem 'asciidoctor-include-ext', '~> 0.3.1', require: false
 gem 'asciidoctor-plantuml', '~> 0.0.12'
-gem 'asciidoctor-kroki', '~> 0.2.2', require: false
+gem 'asciidoctor-kroki', '~> 0.4.0', require: false
 gem 'rouge', '~> 3.26.0'
 gem 'truncato', '~> 0.7.11'
 gem 'bootstrap_form', '~> 4.2.0'
@@ -233,9 +233,6 @@ gem 'redis-rails', '~> 5.0.2'
 # Discord integration
 gem 'discordrb-webhooks-blackst0ne', '~> 3.3', require: false
 
-# HipChat integration
-gem 'hipchat', '~> 1.5.0'
-
 # Jira integration
 gem 'jira-ruby', '~> 2.1.4'
 gem 'atlassian-jwt', '~> 0.2.0'
@@ -272,7 +269,9 @@ gem 'licensee', '~> 8.9'
 gem 'charlock_holmes', '~> 0.7.7'
 
 # Detect mime content type from content
-gem 'mimemagic', '~> 0.3.2'
+gem 'ruby-magic-static', '~> 0.3.4'
+
+gem 'mimemagic', '~> 0.3.10'
 
 # Faster blank
 gem 'fast_blank'

@@ -1,5 +1,5 @@
 { stdenv, lib, fetchurl, fetchFromGitLab, bundlerEnv
-, ruby, tzdata, git, nettools, nixosTests, nodejs, openssl
+, ruby, tzdata, git, nettools, nixosTests, nodejs, openssl, shared-mime-info
 , gitlabEnterprise ? false, callPackage, yarn
 , fixup_yarn_lock, replace
 }:
@@ -20,7 +20,12 @@ let
     inherit ruby;
     gemdir = ./rubyEnv;
     gemset =
-      let x = import (gemdir + "/gemset.nix");
+      let
+        x = import (gemdir + "/gemset.nix");
+        libmagicSrc = fetchurl {
+          url = "https://gitlab.com/gitlab-org/file-mirror/-/package_files/8589820/download";
+          sha256 = "1lgs2w2sgamzf27kz5h7pajz7v62554q21fbs11n4mfrfrm2hpgh";
+        };
       in x // {
         # grpc expects the AR environment variable to contain `ar rpc`. See the
         # discussion in nixpkgs #63056.
@@ -28,10 +33,26 @@ let
           patches = [ ./fix-grpc-ar.patch ];
           dontBuild = false;
         };
+
+        mimemagic = x.mimemagic // {
+          FREEDESKTOP_MIME_TYPES_PATH = "${shared-mime-info}/share/mime/packages/freedesktop.org.xml";
+        };
+
         # the openssl needs the openssl include files
         openssl = x.openssl // {
           buildInputs = [ openssl ];
         };
+
+        ruby-magic-static = x.ruby-magic-static // {
+          dontBuild = false;
+          postPatch = ''
+            substituteInPlace ext/magic/extconf.rb \
+              --replace \
+              https://gitlab.com/gitlab-org/file-mirror/-/package_files/8589820/download \
+              ${libmagicSrc}
+          '';
+        };
+
       };
     groups = [
       "default" "unicorn" "ed25519" "metrics" "development" "puma" "test" "kerberos"
