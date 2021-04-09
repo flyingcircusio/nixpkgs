@@ -416,7 +416,9 @@ if [ -z "$rollback" ]; then
     echo "building the system configuration..." >&2
     if [ "$action" = switch -o "$action" = boot ]; then
         if [[ -z $flake ]]; then
-            pathToConfig="$(nixBuild '<nixpkgs/nixos>' --no-out-link -A system "${extraBuildFlags[@]}")"
+            outLink=$tmpDir/result
+            nixBuild '<nixpkgs/nixos>' --out-link $outLink -A system "${extraBuildFlags[@]}"
+            pathToConfig="$(readlink -f $outLink)"
         else
             outLink=$tmpDir/result
             nix "${flakeFlags[@]}" build "$flake#$flakeAttr.config.system.build.toplevel" \
