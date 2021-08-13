@@ -103,11 +103,12 @@ with lib;
 
     flyingcircus.static.ntpservers = {
       # Those are the routers and backup servers. This needs to move to the
-      # directory service discovery.
-      dev = [ "eddie" "patty"];
-      whq = [ "barbrady01" "terri" "bob" "lou" ];
-      rzob = [ "kenny06" "kenny07" "barbrady02" ];
-      rzrl1 = [ "kenny02" "kenny03" "barbrady03" ];
+      # directory service discovery or just make them part of the router and
+      # backup server role.
+      dev = [ "eddie" "kenny00" ];
+      whq = [ "lou" "kenny01" ];
+      rzob = [ "kenny06" "kenny07" ];
+      rzrl1 = [ "kenny02" "kenny03" ];
       # Location-independent NTP servers from the global public pool.
       standalone = [ "0.pool.ntp.org" "1.pool.ntp.org" "2.pool.ntp.org" ];
     };
