@@ -168,7 +168,7 @@ copyToTarget() {
 
 nixBuild() {
     if [ -z "$buildHost" ]; then
-        nix-build "$@" --out-link $tmpDir/result
+        nix-build "$@"
     else
         local instArgs=()
         local buildArgs=()
@@ -185,6 +185,9 @@ nixBuild() {
                 instArgs+=("$i" "$j")
                 ;;
               -I) # We don't want this in buildArgs
+                shift 1
+                ;;
+              --out-link) # We don't want this in buildArgs
                 shift 1
                 ;;
               "<"*) # nix paths
@@ -415,10 +418,10 @@ fi
 if [ -z "$rollback" ]; then
     echo "building the system configuration..." >&2
     if [ "$action" = switch -o "$action" = boot ]; then
+        outLink=$tmpDir/result
         if [[ -z $flake ]]; then
-            pathToConfig="$(nixBuild '<nixpkgs/nixos>' -A system "${extraBuildFlags[@]}")"
+            pathToConfig="$(nixBuild '<nixpkgs/nixos>' --out-link $outLink -A system "${extraBuildFlags[@]}")"
         else
-            outLink=$tmpDir/result
             nix "${flakeFlags[@]}" build "$flake#$flakeAttr.config.system.build.toplevel" \
               "${extraBuildFlags[@]}" "${lockFlags[@]}" --out-link $outLink
             pathToConfig="$(readlink -f $outLink)"
