@@ -148,7 +148,6 @@ in rec {
   };
 
   dnsmasq = pkgs.callPackage ./dnsmasq.nix { };
-  docsplit = pkgs.callPackage ./docsplit { };
 
   easyrsa3 = pkgs.callPackage ./easyrsa { };
 
