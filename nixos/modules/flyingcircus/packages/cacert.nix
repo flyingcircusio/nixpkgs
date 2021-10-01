@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, writeText, nss, python
+{ stdenv, fetchurl, writeText, nss, python3
 , blacklist ? []
 , includeEmail ? false
 }:
@@ -9,18 +9,25 @@ let
 
   certdata2pem = fetchurl {
     name = "certdata2pem.py";
-    url = "https://anonscm.debian.org/cgit/collab-maint/ca-certificates.git/plain/mozilla/certdata2pem.py?h=debian/20160104";
-    sha256 = "0bw11mgfrf19qziyvdnq22kirp0nn54lfsanrg5h6djs6ig1c2im";
+    urls = [
+      "https://salsa.debian.org/debian/ca-certificates/raw/debian/20170717/mozilla/certdata2pem.py"
+      "https://git.launchpad.net/ubuntu/+source/ca-certificates/plain/mozilla/certdata2pem.py?id=47e49e1e0a8a1ca74deda27f88fe181191562957"
+    ];
+    sha256 = "1d4q27j1gss0186a5m8bs5dk786w07ccyq0qi6xmd2zr1a8q16wy";
   };
 
 in
 
 stdenv.mkDerivation rec {
-  name = "nss-cacert-${nss.version}";
+  name = "nss-cacert-${version}";
+  version = "3.66";
 
-  src = nss.src;
+  src = fetchurl {
+    url = "mirror://mozilla/security/nss/releases/NSS_${replaceStrings ["."] ["_"] version}_RTM/src/nss-${version}.tar.gz";
+    sha256 = "1jfdnh5l4k57r2vb07s06hqi7m2qzk0d9x25lsdsrw3cflx9x9w9";
+  };
 
-  nativeBuildInputs = [ python ];
+  nativeBuildInputs = [ python3 ];
 
   configurePhase = ''
     ln -s nss/lib/ckfw/builtins/certdata.txt
@@ -37,7 +44,7 @@ stdenv.mkDerivation rec {
   '';
 
   buildPhase = ''
-    python certdata2pem.py | grep -vE '^(!|UNTRUSTED)'
+    python3 certdata2pem.py | grep -vE '^(!|UNTRUSTED)'
 
     for cert in *.crt; do
       echo $cert | cut -d. -f1 | sed -e 's,_, ,g' >> ca-bundle.crt
