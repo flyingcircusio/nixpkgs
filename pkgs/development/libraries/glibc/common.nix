@@ -69,6 +69,8 @@ stdenv.mkDerivation ({
        */
       ./2.32-master.patch.gz
 
+      ./disable-nscd-cache.patch
+
       /* Allow NixOS and Nix to handle the locale-archive. */
       ./nix-locale-archive.patch
 

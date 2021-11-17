@@ -1,0 +1,90 @@
+diff --git a/nscd/cache.c b/nscd/cache.c
+index 85090a1641..5ffd578d48 100644
+--- a/nscd/cache.c
++++ b/nscd/cache.c
+@@ -153,83 +153,9 @@ cache_add (int type, const void *key, size_t len, struct datahead *packet,
+ 	       first ? _(" (first)") : "");
+     }
+ 
+-  unsigned long int hash = __nss_hash (key, len) % table->head->module;
+-  struct hashentry *newp;
+-
+-  newp = mempool_alloc (table, sizeof (struct hashentry), 0);
+-  /* If we cannot allocate memory, just do not do anything.  */
+-  if (newp == NULL)
+-    {
+-      /* If necessary mark the entry as unusable so that lookups will
+-	 not use it.  */
+-      if (first)
++  // Completely bypass adding things to the cache.
+ 	packet->usable = false;
+-
+-      return -1;
+-    }
+-
+-  newp->type = type;
+-  newp->first = first;
+-  newp->len = len;
+-  newp->key = (char *) key - table->data;
+-  assert (newp->key + newp->len <= table->head->first_free);
+-  newp->owner = owner;
+-  newp->packet = (char *) packet - table->data;
+-  assert ((newp->packet & BLOCK_ALIGN_M1) == 0);
+-
+-  /* Put the new entry in the first position.  */
+-  /* TODO Review concurrency.  Use atomic_exchange_release.  */
+-  newp->next = atomic_load_relaxed (&table->head->array[hash]);
+-  while (!atomic_compare_exchange_weak_release (&table->head->array[hash],
+-						(ref_t *) &newp->next,
+-						(ref_t) ((char *) newp
+-							 - table->data)));
+-
+-  /* Update the statistics.  */
+-  if (packet->notfound)
+-    ++table->head->negmiss;
+-  else if (first)
+-    ++table->head->posmiss;
+-
+-  /* We depend on this value being correct and at least as high as the
+-     real number of entries.  */
+-  atomic_increment (&table->head->nentries);
+-
+-  /* It does not matter that we are not loading the just increment
+-     value, this is just for statistics.  */
+-  unsigned long int nentries = table->head->nentries;
+-  if (nentries > table->head->maxnentries)
+-    table->head->maxnentries = nentries;
+-
+-  if (table->persistent)
+-    // XXX async OK?
+-    msync ((void *) table->head,
+-	   (char *) &table->head->array[hash] - (char *) table->head
+-	   + sizeof (ref_t), MS_ASYNC);
+-
+-  /* We do not have to worry about the pruning thread if we are
+-     re-adding the data since this is done by the pruning thread.  We
+-     also do not have to do anything in case this is not the first
+-     time the data is entered since different data heads all have the
+-     same timeout.  */
+-  if (first && prune_wakeup)
+-    {
+-      /* Perhaps the prune thread for the table is not running in a long
+-	 time.  Wake it if necessary.  */
+-      pthread_mutex_lock (&table->prune_lock);
+-      time_t next_wakeup = table->wakeup_time;
+-      bool do_wakeup = false;
+-      if (next_wakeup > packet->timeout + CACHE_PRUNE_INTERVAL)
+-	{
+-	  table->wakeup_time = packet->timeout;
+-	  do_wakeup = true;
+-	}
+-      pthread_mutex_unlock (&table->prune_lock);
+-      if (do_wakeup)
+-	pthread_cond_signal (&table->prune_cond);
+-    }
+-
+-  return 0;
++  return -1;
+ }
+ 
+ /* Walk through the table and remove all entries which lifetime ended.
