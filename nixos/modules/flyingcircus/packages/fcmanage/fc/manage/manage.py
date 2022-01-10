@@ -41,6 +41,7 @@ class Channel:
 
     # global, to avoid re-connecting (with ssl handshake and all)
     session = requests.session()
+    session.verify = "/etc/ssl/certs/ca-bundle.crt"
     hydra_reachable = True
     is_local = False
 
