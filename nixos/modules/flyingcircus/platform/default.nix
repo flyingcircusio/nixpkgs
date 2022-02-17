@@ -188,9 +188,10 @@ in
         "flyingcircus.io-1:Rr9CwiPv8cdVf3EQu633IOTb6iJKnWbVfCC8x8gVz2o="
       ];
 
-      binaryCaches = [
-        https://cache.nixos.org
-        https://hydra.flyingcircus.io
+      binaryCaches = lib.mkOverride 90 [
+        "https://cache.nixos.org"
+        "https://s3.whq.fcio.net/hydra"
+        "https://hydra.flyingcircus.io"
       ];
 
       extraOptions = ''
