@@ -187,9 +187,9 @@ in {
     extraMeta.knownVulnerabilities = [ "Support for OpenSSL 1.0.2 ended with 2019." ];
   };
 
-  openssl_1_1 = common {
-    version = "1.1.1l";
-    sha256 = "sha256-C3o+XlnDSCf+DDp0t+yLrvMCuY+oAIjX+RU6oW+na9E=";
+  openssl_1_1 = common rec {
+    version = "1.1.1n";
+    sha256 = "sha256-QNzrUaT2pSdb3g5r8g70uRv8Mu1XwFUuLo4VRjNysXo=";
     patches = [
       ./1.1/nix-ssl-cert-file.patch
 
