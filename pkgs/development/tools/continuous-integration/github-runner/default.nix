@@ -137,7 +137,7 @@ stdenv.mkDerivation rec {
       -t:Build \
       -p:PackageRuntime="${runtimeId}" \
       -p:BUILDCONFIG="Release" \
-      -p:RunnerVersion="${version}" \
+      -p:RunnerVersion="$version" \
       -p:GitInfoCommitHash="${fakeSha1}" \
       src/dir.proj
 
@@ -229,7 +229,7 @@ stdenv.mkDerivation rec {
       -t:test \
       -p:PackageRuntime="${runtimeId}" \
       -p:BUILDCONFIG="Debug" \
-      -p:RunnerVersion="${version}" \
+      -p:RunnerVersion="$version" \
       -p:GitInfoCommitHash="${fakeSha1}" \
       src/dir.proj
 
