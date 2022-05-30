@@ -29,7 +29,8 @@ import ./make-test-python.nix ({ pkgs, ... }:
 
     # adapted from pkgs.solr/examples/films/README.txt
     machine.succeed("sudo -u solr solr create -c films")
-    assert '"status":0' in machine.succeed(
+    machine.succeed("chmod 0644 /var/lib/solr/data/films/conf/managed-schema")
+    res = machine.succeed(
         """
       curl http://localhost:8983/solr/films/schema -X POST -H 'Content-type:application/json' --data-binary '{
         "add-field" : {
@@ -46,6 +47,9 @@ import ./make-test-python.nix ({ pkgs, ... }:
       }'
     """
     )
+
+    assert '"status":0' in res, "unexpected output: " + res
+
     machine.succeed(
         "sudo -u solr post -c films ${pkgs.solr}/example/films/films.json"
     )
