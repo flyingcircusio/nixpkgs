@@ -1,7 +1,7 @@
 { lib, stdenv, fetchFromGitHub, openssl_1_1, runtimeShell }:
 
 let
-  version = "3.0.8";
+  version = "3.1.2";
 in stdenv.mkDerivation {
   pname = "easyrsa";
   inherit version;
@@ -10,7 +10,7 @@ in stdenv.mkDerivation {
     owner = "OpenVPN";
     repo = "easy-rsa";
     rev = "v${version}";
-    sha256 = "05q60s343ydh9j6hzj0840qdcq8fkyz06q68yw4pqgqg4w68rbgs";
+    sha256 = "sha256-nZjEBAJnho2Qis5uzQs1sVZVFHHSgJVa5aJS+dAfFCg=";
   };
 
   patches = [ ./fix-paths.patch ];
