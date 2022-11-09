@@ -156,9 +156,8 @@ let
       };
       extra = {};
       uploads.storage_path = cfg.statePath;
-      pages = {
-        enabled = cfg.pages.enable;
-        port = 8090;
+      pages = lib.optionalAttrs cfg.pages.enable {
+        enabled = true;
         host = cfg.pages.settings.pages-domain;
         secret_file = cfg.pages.settings.api-secret-key;
       };
