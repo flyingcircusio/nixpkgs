@@ -43,7 +43,7 @@ let
     prometheus_listen_addr = "localhost:9236"
 
     [git]
-    bin_path = "${pkgs.git}/bin/git"
+    bin_path = "${cfg.packages.git}/bin/git"
 
     [gitlab-shell]
     dir = "${cfg.packages.gitlab-shell}"
@@ -179,7 +179,7 @@ let
   runtimeDeps = with pkgs; [
     nodejs
     gzip
-    git
+    cfg.packages.git
     gnutar
     postgresqlPackage
     coreutils
@@ -255,6 +255,16 @@ in {
         default = false;
         description = lib.mdDoc ''
           Enable the gitlab service.
+        '';
+      };
+
+      packages.git = mkOption {
+        type = types.package;
+        default = pkgs.git;
+        defaultText = literalExpression "pkgs.git";
+        description = lib.mdDoc ''
+          Git package used by Gitlab.
+          Can be used for security fixes without changing Git globally.";
         '';
       };
 
@@ -1130,7 +1140,7 @@ in {
       }
     ];
 
-    environment.systemPackages = [ pkgs.git gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
+    environment.systemPackages = [ cfg.packages.git gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
 
     systemd.targets.gitlab = {
       description = "Common target for all GitLab services.";
@@ -1304,7 +1314,7 @@ in {
         jq
         openssl
         replace-secret
-        git
+        cfg.packages.git
       ];
       serviceConfig = {
         Type = "oneshot";
@@ -1459,7 +1469,7 @@ in {
       });
       path = with pkgs; [
         postgresqlPackage
-        git
+        cfg.packages.git
         ruby
         openssh
         nodejs
@@ -1489,7 +1499,7 @@ in {
       partOf = [ "gitlab.target" ];
       path = with pkgs; [
         openssh
-        git
+        cfg.packages.git
         gzip
         bzip2
       ];
@@ -1572,7 +1582,7 @@ in {
       path = with pkgs; [
         remarshal
         exiftool
-        git
+        cfg.packages.git
         gnutar
         gzip
         openssh
@@ -1645,7 +1655,7 @@ in {
       environment = gitlabEnv;
       path = with pkgs; [
         postgresqlPackage
-        git
+        cfg.packages.git
         openssh
         nodejs
         procps
