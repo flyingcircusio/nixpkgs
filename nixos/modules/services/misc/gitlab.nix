@@ -57,7 +57,7 @@ let
     prometheus_listen_addr = "localhost:9236"
 
     [git]
-    bin_path = "${gitPackage}/bin/git"
+    bin_path = "${cfg.packages.git}/bin/git"
 
     [gitlab-shell]
     dir = "${cfg.packages.gitlab-shell}"
@@ -193,7 +193,7 @@ let
   runtimeDeps = with pkgs; [
     nodejs
     gzip
-    gitPackage
+    cfg.packages.git
     gnutar
     postgresqlPackage
     coreutils
@@ -270,6 +270,14 @@ in {
         description = lib.mdDoc ''
           Enable the gitlab service.
         '';
+      };
+
+      packages.git = mkOption {
+        type = types.package;
+        default = gitPackage;
+        defaultText = literalExpression "Git 2.41 for Gitlab 16.3 on NixOS 23.05, otherwise just pkgs.git";
+        description = lib.mdDoc "Reference to the git package";
+        example = literalExpression "pkgs.git_2_41";
       };
 
       packages.gitlab = mkOption {
@@ -1144,7 +1152,7 @@ in {
       }
     ];
 
-    environment.systemPackages = [ gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
+    environment.systemPackages = [ cfg.packages.git gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
 
     systemd.targets.gitlab = {
       description = "Common target for all GitLab services.";
@@ -1318,7 +1326,7 @@ in {
         jq
         openssl
         replace-secret
-        gitPackage
+        cfg.packages.git
       ];
       serviceConfig = {
         Type = "oneshot";
@@ -1473,7 +1481,7 @@ in {
       });
       path = with pkgs; [
         postgresqlPackage
-        gitPackage
+        cfg.packages.git
         ruby
         openssh
         nodejs
@@ -1503,7 +1511,7 @@ in {
       partOf = [ "gitlab.target" ];
       path = with pkgs; [
         openssh
-        gitPackage
+        cfg.packages.git
         gzip
         bzip2
       ];
@@ -1586,7 +1594,7 @@ in {
       path = with pkgs; [
         remarshal
         exiftool
-        gitPackage
+        cfg.packages.git
         gnutar
         gzip
         openssh
@@ -1659,7 +1667,7 @@ in {
       environment = gitlabEnv;
       path = with pkgs; [
         postgresqlPackage
-        gitPackage
+        cfg.packages.git
         openssh
         nodejs
         procps
