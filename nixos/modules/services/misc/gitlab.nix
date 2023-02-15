@@ -45,7 +45,7 @@ let
     prometheus_listen_addr = "localhost:9236"
 
     [git]
-    bin_path = "${pkgs.git}/bin/git"
+    bin_path = "${cfg.packages.git}/bin/git"
 
     [gitaly-ruby]
     dir = "${cfg.packages.gitaly.ruby}"
@@ -257,6 +257,14 @@ in {
         description = lib.mdDoc ''
           Enable the gitlab service.
         '';
+      };
+
+      packages.git = mkOption {
+        type = types.package;
+        default = pkgs.git;
+        defaultText = literalExpression "pkgs.git";
+        description = lib.mdDoc "Reference to the git package";
+        example = literalExpression "pkgs.git";
       };
 
       packages.gitlab = mkOption {
@@ -1084,7 +1092,7 @@ in {
       }
     ];
 
-    environment.systemPackages = [ pkgs.git gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
+    environment.systemPackages = [ cfg.packages.git gitlab-rake gitlab-rails cfg.packages.gitlab-shell ];
 
     systemd.targets.gitlab = {
       description = "Common target for all GitLab services.";
