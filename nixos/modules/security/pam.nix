@@ -689,7 +689,7 @@ let
           ] ++ optional cfg.ttyAudit.openOnly "open_only"
           ++ optional (cfg.ttyAudit.enablePattern != null) "enable=${cfg.ttyAudit.enablePattern}"
           ++ optional (cfg.ttyAudit.disablePattern != null) "disable=${cfg.ttyAudit.disablePattern}"
-          )) +
+          ) + "\n") +
           optionalString config.services.homed.enable ''
             session required ${config.systemd.package}/lib/security/pam_systemd_home.so
           '' +
