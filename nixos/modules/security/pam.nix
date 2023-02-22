@@ -649,7 +649,7 @@ let
           ] ++ optional cfg.ttyAudit.openOnly "open_only"
           ++ optional (cfg.ttyAudit.enablePattern != null) "enable=${cfg.ttyAudit.enablePattern}"
           ++ optional (cfg.ttyAudit.disablePattern != null) "disable=${cfg.ttyAudit.disablePattern}"
-          )) +
+          ) + "\n") +
           optionalString cfg.makeHomeDir ''
             session required ${pkgs.pam}/lib/security/pam_mkhomedir.so silent skel=${config.security.pam.makeHomeDir.skelDirectory} umask=0077
           '' +
