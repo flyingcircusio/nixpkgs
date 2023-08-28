@@ -128,6 +128,7 @@ buildPythonPackage rec {
     entrypoints
     jinja2
     jupyter-telemetry
+    jupyterlab
     oauthlib
     packaging
     pamela
