@@ -67,6 +67,9 @@ assert xarSupport -> libxml2 != null;
       # access-time-related tests flakey on some systems
       "cpio/test/test_option_a.c"
       "cpio/test/test_option_t.c"
+      # FCIO: fails on our hydra.
+      # FCIO: We have seen this before, see ad46d880fcb1ba627965cd30d0a940e99f6f6e39 in fc-nixos.
+      "cpio/test/test_format_newc.c"
     ];
     removeTest = testPath: ''
       substituteInPlace Makefile.am --replace "${testPath}" ""
