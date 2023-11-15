@@ -24,7 +24,9 @@ buildPythonPackage rec {
 
   nativeBuildInputs = [ pkg-config ];
 
-  nativeCheckInputs = [ lxml mock psutil pytest ];
+  nativeCheckInputs = [ mock pytest ];
+
+  propagatedBuildInputs = [ lxml psutil ];
 
   checkPhase = "pytest tests";
 
