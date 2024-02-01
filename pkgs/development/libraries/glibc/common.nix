@@ -44,7 +44,7 @@
 
 let
   version = "2.37";
-  patchSuffix = "-45";
+  patchSuffix = "-64";
   sha256 = "sha256-Ilfv8RGhgV109GhW2q9AsBnB5VMVbGnUi6DL/Bu5GkM=";
 in
 
@@ -95,6 +95,11 @@ stdenv.mkDerivation ({
         See https://github.com/NixOS/nixpkgs/pull/188492#issuecomment-1233802991 for context.
       */
       ./reenable_DT_HASH.patch
+
+      /* Retrieved from https://salsa.debian.org/glibc-team/glibc/-/commit/662dbc4f9287139a0d9c91df328a5ba6cc6abee1#0f3c6d67cb8cf5bb35c421c20f828fea97b68edf
+        Qualys advisory: https://www.qualys.com/2024/01/30/qsort.txt
+      */
+      ./local-qsort-memory-corruption.patch
     ]
     ++ lib.optional stdenv.hostPlatform.isMusl ./fix-rpc-types-musl-conflicts.patch
     ++ lib.optional stdenv.buildPlatform.isDarwin ./darwin-cross-build.patch;
