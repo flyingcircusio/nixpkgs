@@ -1310,6 +1310,7 @@ in {
     systemd.services.gitlab-config = {
       wantedBy = [ "gitlab.target" ];
       partOf = [ "gitlab.target" ];
+      bindsTo = [ "gitlab-db-config.service" ];
       path = with pkgs; [
         jq
         openssl
