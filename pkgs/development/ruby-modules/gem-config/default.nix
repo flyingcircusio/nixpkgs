@@ -312,9 +312,7 @@ in
           cp -R ext/fast_mmaped_file_rs $out
         '';
       };
-      hash = if lib.versionAtLeast attrs.version "1.1.0"
-        then "sha256-tSyoCEBtMMkFfPynaMx8oc9bO7I+Pf6Y/f3Ld8uwlEE="
-        else "sha256-XuQZPbFWqPHlrJvllkvLl1FjKeoAUbi8oKDrS2rY1KM=";
+      hash = "sha256-RsN5XWX7Mj2ORccM0eczY+44WXsbXNTnJVcCMvnOATk=";
     };
     nativeBuildInputs = [
       cargo
