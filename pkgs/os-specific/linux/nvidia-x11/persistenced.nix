@@ -34,7 +34,7 @@ stdenv.mkDerivation rec {
   '';
 
   NIX_CFLAGS_COMPILE = [ "-I${libtirpc.dev}/include/tirpc" ];
-  NIX_LDFLAGS = [ "-ltirpc" ];
+  NIX_LDFLAGS = [ "-ltirpc" "-ldl" "-lpthread" ];
 
   meta = with lib; {
     homepage = "https://www.nvidia.com/object/unix.html";
