@@ -67,18 +67,7 @@ let
     systemd.services =
       let
 
-        deviceDependency = dev:
-          # Use systemd service if we manage device creation, else
-          # trust udev when not in a container
-          if (hasAttr dev (filterAttrs (k: v: v.virtual) cfg.interfaces)) ||
-             (hasAttr dev cfg.bridges) ||
-             (hasAttr dev cfg.bonds) ||
-             (hasAttr dev cfg.macvlans) ||
-             (hasAttr dev cfg.sits) ||
-             (hasAttr dev cfg.vlans) ||
-             (hasAttr dev cfg.vswitches)
-          then [ "${dev}-netdev.service" ]
-          else optional (dev != null && dev != "lo" && !config.boot.isContainer) (subsystemDevice dev);
+        deviceDependency = dev: [ "${dev}-netdev.service" ];
 
         hasDefaultGatewaySet = (cfg.defaultGateway != null && cfg.defaultGateway.address != "")
                             || (cfg.enableIPv6 && cfg.defaultGateway6 != null && cfg.defaultGateway6.address != "");
@@ -94,8 +83,10 @@ let
             after = [ "network-pre.target" "systemd-udevd.service" "systemd-sysctl.service" ];
             before = [ "network.target" "shutdown.target" ];
             wants = [ "network.target" ];
+
             # exclude bridges from the partOf relationship to fix container networking bug #47210
-            partOf = map (i: "network-addresses-${i.name}.service") (filter (i: !(hasAttr i.name cfg.bridges)) interfaces);
+            requiredBy = map (i: "network-addresses-${i.name}.service") (filter (i: !(hasAttr i.name cfg.bridges)) interfaces);
+
             conflicts = [ "shutdown.target" ];
             wantedBy = [ "multi-user.target" ] ++ optional hasDefaultGatewaySet "network-online.target";
 
@@ -174,10 +165,12 @@ let
             wantedBy = [
               "network-setup.service"
               "network.target"
+              "multi-user.target"
             ];
             # order before network-setup because the routes that are configured
             # there may need ip addresses configured
             before = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             bindsTo = deviceDependency i.name;
             after = [ "network-pre.target" ] ++ (deviceDependency i.name);
             serviceConfig.Type = "oneshot";
@@ -256,7 +249,7 @@ let
             bindsTo = optional (!config.boot.isContainer) "dev-net-tun.device";
             after = optional (!config.boot.isContainer) "dev-net-tun.device" ++ [ "network-pre.target" ];
             wantedBy = [ "network-setup.service" (subsystemDevice i.name) ];
-            partOf = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             before = [ "network-setup.service" ];
             path = [ pkgs.iproute2 ];
             serviceConfig = {
@@ -278,7 +271,7 @@ let
           { description = "Bridge Interface ${n}";
             wantedBy = [ "network-setup.service" (subsystemDevice n) ];
             bindsTo = deps ++ optional v.rstp "mstpd.service";
-            partOf = [ "network-setup.service" ] ++ optional v.rstp "mstpd.service";
+            requires = [ "network-setup.service" ] ++ optional v.rstp "mstpd.service";
             after = [ "network-pre.target" ] ++ deps ++ optional v.rstp "mstpd.service"
               ++ map (i: "network-addresses-${i}.service") v.interfaces;
             before = [ "network-setup.service" ];
@@ -366,7 +359,7 @@ let
             # should work without internalConfigs dependencies because address/link configuration depends
             # on the device, which is created by ovs-vswitchd with type=internal, but it does not...
             before = [ "network-setup.service" ] ++ internalConfigs;
-            partOf = [ "network-setup.service" ]; # shutdown the bridge when network is shutdown
+            requires = [ "network-setup.service" ]; # shutdown the bridge when network is shutdown
             bindsTo = [ "ovs-vswitchd.service" ]; # requires ovs-vswitchd to be alive at all times
             after = [ "network-pre.target" "ovs-vswitchd.service" ] ++ deps; # start switch after physical interfaces and vswitch daemon
             wants = deps; # if one or more interface fails, the switch should continue to run
@@ -407,7 +400,7 @@ let
           { description = "Bond Interface ${n}";
             wantedBy = [ "network-setup.service" (subsystemDevice n) ];
             bindsTo = deps;
-            partOf = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             after = [ "network-pre.target" ] ++ deps
               ++ map (i: "network-addresses-${i}.service") v.interfaces;
             before = [ "network-setup.service" ];
@@ -446,7 +439,7 @@ let
           { description = "Vlan Interface ${n}";
             wantedBy = [ "network-setup.service" (subsystemDevice n) ];
             bindsTo = deps;
-            partOf = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             after = [ "network-pre.target" ] ++ deps;
             before = [ "network-setup.service" ];
             serviceConfig.Type = "oneshot";
@@ -471,7 +464,7 @@ let
           { description = "6-to-4 Tunnel Interface ${n}";
             wantedBy = [ "network-setup.service" (subsystemDevice n) ];
             bindsTo = deps;
-            partOf = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             after = [ "network-pre.target" ] ++ deps;
             before = [ "network-setup.service" ];
             serviceConfig.Type = "oneshot";
@@ -499,7 +492,7 @@ let
           { description = "Vlan Interface ${n}";
             wantedBy = [ "network-setup.service" (subsystemDevice n) ];
             bindsTo = deps;
-            partOf = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             after = [ "network-pre.target" ] ++ deps;
             before = [ "network-setup.service" ];
             serviceConfig.Type = "oneshot";
