@@ -68,7 +68,7 @@ let
       let
 
         deviceDependency = dev: 
-          optional (dev != null && dev != "lo" && !config.boot.isContainer) ["${dev}-netdev.service"];
+          if (dev != null && dev != "lo" && !config.boot.isContainer) then [ "${dev}-netdev.service" ] else [];
 
         hasDefaultGatewaySet = (cfg.defaultGateway != null && cfg.defaultGateway.address != "")
                             || (cfg.enableIPv6 && cfg.defaultGateway6 != null && cfg.defaultGateway6.address != "");
