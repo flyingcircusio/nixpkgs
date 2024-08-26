@@ -26430,7 +26430,8 @@ with pkgs;
 
   rabbitmq-server = callPackage ../servers/amqp/rabbitmq-server {
     inherit (darwin.apple_sdk.frameworks) AppKit Carbon Cocoa;
-    elixir = elixir_1_14;
+    elixir = beam.packages.erlang_26.elixir_1_16;
+    erlang = erlang_26;
   };
 
   radicale2 = callPackage ../servers/radicale/2.x.nix { };
