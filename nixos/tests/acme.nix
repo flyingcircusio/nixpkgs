@@ -284,6 +284,22 @@ in {
           }
         ];
 
+        # FIXME: consider making this a generic webserver test in mkServerConfigs
+        add_new_vhost_before.configuration =  { ... }: lib.mkMerge [
+          webserverBasicConfig
+          { services.nginx.enableReload = true; }
+        ];
+        add_new_vhost_after.configuration = { ... }: lib.mkMerge [
+          webserverBasicConfig
+          {
+            services.nginx.virtualHosts."newvhostthatdidnotexistbefore.example.test" = {
+              enableACME = true;
+            };
+            # FIXME: as of e9e4fb40ef03df96881ce7f40d12b9496da7cfaf, nginx still restarts when the unit file is changed (due to adding another acme unit dependency)
+            services.nginx.enableReload = true;
+          }
+        ];
+
         concurrency_limit.configuration = {pkgs, ...}: lib.mkMerge [
           webserverBasicConfig {
             security.acme.maxConcurrentRenewals = 1;
@@ -658,6 +674,19 @@ in {
           check_connection(client, "f.example.test")
           check_connection(client, "g.example.test")
           check_connection(client, "h.example.test")
+
+      with subtest("Nginx reloading has new vhosts available for HTTP challenges"):
+          # start with a clean slate
+          switch_to(webserver, "add_new_vhost_before")
+          webserver.wait_for_unit("acme-finished-a.example.test.target")
+          webserver.succeed("systemctl stop nginx.service")
+          webserver.succeed("systemctl start nginx.service")
+          webserver.wait_for_unit("nginx.service")
+
+          # add new vhost during runtime, that has to be available for HTTP challenge validation right away
+          switch_to(webserver, "add_new_vhost_after")
+          webserver.wait_for_unit("acme-finished-newvhostthatdidnotexistbefore.example.test.target")
+          check_connection(client, "newvhostthatdidnotexistbefore.example.test")
 
       with subtest("Works with caddy"):
           switch_to(webserver, "caddy")
