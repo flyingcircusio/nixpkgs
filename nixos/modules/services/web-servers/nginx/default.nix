@@ -8,6 +8,9 @@ let
   vhostsConfigs = mapAttrsToList (vhostName: vhostConfig: vhostConfig) virtualHosts;
   acmeEnabledVhosts = filter (vhostConfig: vhostConfig.enableACME || vhostConfig.useACMEHost != null) vhostsConfigs;
   dependentCertNames = unique (map (hostOpts: hostOpts.certName) acmeEnabledVhosts);
+  sslServices = map (certName: "acme-${certName}.service") dependentCertNames;
+  sslTargets = map (certName: "acme-finished-${certName}.target") dependentCertNames;
+  sslSelfSignedServices = map (certName: "acme-selfsigned-${certName}.service") dependentCertNames;
   virtualHosts = mapAttrs (vhostName: vhostConfig:
     let
       serverName = if vhostConfig.serverName != null
@@ -1232,16 +1235,27 @@ in
       };
     };
 
+    # intermediary unit for coupling nginx to its ACME certificates. This is
+    # necessary because otherwise adding or removing certificates changes the
+    # nginx.service unit file, causing the service to be restarted.
+    systemd.targets.ensure-nginx-certificates = {
+      wants = concatLists (map (certName: [ "acme-finished-${certName}.target" ]) dependentCertNames);
+    };
     systemd.services.nginx = {
       description = "Nginx Web Server";
       wantedBy = [ "multi-user.target" ];
-      wants = concatLists (map (certName: [ "acme-finished-${certName}.target" ]) dependentCertNames);
-      after = [ "network.target" ] ++ map (certName: "acme-selfsigned-${certName}.service") dependentCertNames;
+      wants = [ "ensure-nginx-certificates.target" ];
+      after = [ "network.target" "ensure-nginx-certificates.target" ];
       # Nginx needs to be started in order to be able to request certificates
       # (it's hosting the acme challenge after all)
       # This fixes https://github.com/NixOS/nixpkgs/issues/81842
       before = map (certName: "acme-${certName}.service") dependentCertNames;
       stopIfChanged = false;
+      reloadTriggers = if sslServices == []
+        # without dependant SSL certificates, nginx can reload itself
+        then [ cfg.package configFile ]
+        # otherwise, reloads need to be managed by nginx-config-reload*.service
+        else [];
       preStart = ''
         ${cfg.preStart}
         ${execCommand} -t
@@ -1309,32 +1323,47 @@ in
       source = configFile;
     };
 
-    # This service waits for all certificates to be available
-    # before reloading nginx configuration.
+    # When reloading nginx, we need to pay attention that all configured
+    # certificate files are available. This service checks and waits for that
+    # condition before triggering a reload.
     # sslTargets are added to wantedBy + before
     # which allows the acme-finished-$cert.target to signify the successful updating
     # of certs end-to-end.
-    systemd.services.nginx-config-reload = let
-      sslServices = map (certName: "acme-${certName}.service") dependentCertNames;
-      sslTargets = map (certName: "acme-finished-${certName}.target") dependentCertNames;
-    in mkIf (cfg.enableReload || sslServices != []) {
-      wants = optionals cfg.enableReload [ "nginx.service" ];
+
+    systemd.services =  let
+    nginxReloadCommon = {
+      #wants = optionals cfg.enableReload [ "nginx.service" ];
+      wants = [ "nginx.service" ];
       wantedBy = sslServices ++ [ "multi-user.target" ];
-      # Before the finished targets, after the renew services.
-      # This service might be needed for HTTP-01 challenges, but we only want to confirm
-      # certs are updated _after_ config has been reloaded.
-      before = sslTargets;
-      after = sslServices;
-      restartTriggers = optionals cfg.enableReload [ configFile ];
+      # restartTriggers are semantical reload triggers for nginx.service
+      restartTriggers = [ configFile cfg.package ];
       # Block reloading if not all certs exist yet.
       # Happens when config changes add new vhosts/certs.
       unitConfig.ConditionPathExists = optionals (sslServices != []) (map (certName: certs.${certName}.directory + "/fullchain.pem") dependentCertNames);
       serviceConfig = {
         Type = "oneshot";
         TimeoutSec = 60;
+        Restart = "on-abnormal";
         ExecCondition = "/run/current-system/systemd/bin/systemctl -q is-active nginx.service";
         ExecStart = "/run/current-system/systemd/bin/systemctl reload nginx.service";
       };
+    };
+    # FIXME: do we need this condition or are the reload services also okay
+    # for certless nginx configs?
+    in mkIf (sslServices != []) {
+    # reload config before acme renewals, to ensure new vhosts are actually activated from the config file
+    nginx-config-reload-pre-renew = {
+      before = sslServices;
+      after = sslSelfSignedServices;
+    } // nginxReloadCommon;
+
+    nginx-config-reload-post-renew = {
+      # Before the finished targets, after the renew services.
+      # This service might be needed for HTTP-01 challenges, but we only want to confirm
+      # certs are updated _after_ config has been reloaded.
+      before = sslTargets;
+      after = sslServices;
+    } // nginxReloadCommon;
     };
 
     security.acme.certs = let
