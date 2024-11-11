@@ -98,32 +98,19 @@ let
 
         deviceDependency =
           dev:
-          # Use systemd service if we manage device creation, else
-          # trust udev when not in a container
-          if (dev == null || dev == "lo") then
+          if (dev == null || dev == "lo" || config.boot.isContainer) then
             [ ]
-          else if
-            (hasAttr dev (filterAttrs (k: v: v.virtual) cfg.interfaces))
-            || (hasAttr dev cfg.bridges)
-            || (hasAttr dev cfg.bonds)
-            || (hasAttr dev cfg.macvlans)
-            || (hasAttr dev cfg.ipvlans)
-            || (hasAttr dev cfg.sits)
-            || (hasAttr dev cfg.ipips)
-            || (hasAttr dev cfg.vlans)
-            || (hasAttr dev cfg.greTunnels)
-            || (hasAttr dev cfg.vswitches)
-          then
-            [ "${dev}-netdev.service" ]
           else
-            optional (!config.boot.isContainer) (subsystemDevice dev);
+            [ "${dev}-netdev.service" ];
 
         hasDefaultGatewaySet =
           (cfg.defaultGateway != null && cfg.defaultGateway.address != "")
           || (cfg.enableIPv6 && cfg.defaultGateway6 != null && cfg.defaultGateway6.address != "");
 
-        needNetworkSetup =
-          cfg.resolvconf.enable || cfg.defaultGateway != null || cfg.defaultGateway6 != null;
+        # XXX we explicitly rely on network-setup.service being
+        # unconditionally present for triggering dependencies on
+        # interface units.
+        needNetworkSetup = true;
 
         networkLocalCommands = lib.mkIf needNetworkSetup {
           after = [ "network-setup.service" ];
@@ -133,14 +120,18 @@ let
         networkSetup = lib.mkIf needNetworkSetup {
           description = "Networking Setup";
 
-          after = [ "network-pre.target" ];
+          after = [
+            "network-pre.target"
+            "systemd-udevd.service"
+            "systemd-sysctl.service"
+          ];
           before = [
             "network.target"
             "shutdown.target"
           ];
           wants = [ "network.target" ];
-          # exclude bridges from the partOf relationship to fix container networking bug #47210
-          partOf = map (i: "network-addresses-${i.name}.service") (
+          # exclude bridges from the requires relationship to fix container networking bug #47210
+          requiredBy = map (i: "network-addresses-${i.name}.service") (
             filter (i: !(hasAttr i.name cfg.bridges)) interfaces
           );
           conflicts = [ "shutdown.target" ];
@@ -227,10 +218,12 @@ let
             wantedBy = [
               "network-setup.service"
               "network.target"
+              "multi-user.target"
             ];
             # order before network-setup because the routes that are configured
             # there may need ip addresses configured
             before = [ "network-setup.service" ];
+            requires = [ "network-setup.service" ];
             bindsTo = deviceDependency i.name;
             after = [ "network-pre.target" ] ++ (deviceDependency i.name);
             serviceConfig.Type = "oneshot";
@@ -317,6 +310,7 @@ let
               "network-setup.service"
               (subsystemDevice i.name)
             ];
+            requires = [ "network-setup.service" ];
             before = [ "network-setup.service" ];
             path = [ pkgs.iproute2 ];
             serviceConfig = {
@@ -347,7 +341,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps ++ optional v.rstp "mstpd.service";
-              partOf = [ "network-setup.service" ] ++ optional v.rstp "mstpd.service";
+              requires = [ "network-setup.service" ] ++ optional v.rstp "mstpd.service";
               after = [
                 "network-pre.target"
               ]
@@ -457,7 +451,7 @@ let
               # should work without internalConfigs dependencies because address/link configuration depends
               # on the device, which is created by ovs-vswitchd with type=internal, but it does not...
               before = [ "network-setup.service" ] ++ internalConfigs;
-              partOf = [ "network-setup.service" ]; # shutdown the bridge when network is shutdown
+              requires = [ "network-setup.service" ]; # shutdown the bridge when network is shutdown
               bindsTo = [ "ovs-vswitchd.service" ]; # requires ovs-vswitchd to be alive at all times
               after = [
                 "network-pre.target"
@@ -526,6 +520,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps ++ map (i: "network-addresses-${i}.service") v.interfaces;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
@@ -575,6 +570,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
@@ -652,6 +648,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
@@ -682,6 +679,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
@@ -773,6 +771,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
@@ -808,7 +807,7 @@ let
                 (subsystemDevice n)
               ];
               bindsTo = deps;
-              partOf = [ "network-setup.service" ];
+              requires = [ "network-setup.service" ];
               after = [ "network-pre.target" ] ++ deps;
               before = [ "network-setup.service" ];
               serviceConfig.Type = "oneshot";
