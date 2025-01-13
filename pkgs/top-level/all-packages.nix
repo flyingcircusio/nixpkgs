@@ -8309,6 +8309,10 @@ with pkgs;
 
   gitlab-container-registry = callPackage ../applications/version-management/gitlab/gitlab-container-registry { };
 
+  gitlab-kas = callPackage ../applications/version-management/gitlab/gitlab-kas {
+    buildGoModule = buildGo123Module;
+  };
+
   gitlab-pages = callPackage ../applications/version-management/gitlab/gitlab-pages { };
 
   gitlab-runner = callPackage ../development/tools/continuous-integration/gitlab-runner { };

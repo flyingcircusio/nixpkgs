@@ -107,6 +107,7 @@ class GitLabRepo:
             v: self.get_file(v, rev).strip()
             for v in [
                 "GITALY_SERVER_VERSION",
+                "GITLAB_KAS_VERSION",
                 "GITLAB_PAGES_VERSION",
                 "GITLAB_SHELL_VERSION",
                 "GITLAB_ELASTICSEARCH_INDEXER_VERSION",
@@ -272,6 +273,15 @@ def update_gitlab_pages():
     _call_nix_update("gitlab-pages", gitlab_pages_version)
 
 
+@cli.command("update-gitlab-kas")
+def update_gitlab_kas():
+    """Update gitlab-kas (Gitlab agent for Kubernetes)"""
+    logger.info("Updating gitlab-kas")
+    data = _get_data_json()
+    gitlab_kas_version = data["passthru"]["GITLAB_KAS_VERSION"]
+    _call_nix_update("gitlab-kas", gitlab_kas_version)
+
+
 def get_container_registry_version() -> str:
     """Returns the version attribute of gitlab-container-registry"""
     return subprocess.check_output(
@@ -381,6 +391,7 @@ def commit_gitlab(old_version: str, new_version: str, new_rev: str) -> None:
             "data.json",
             "rubyEnv",
             "gitaly",
+            "gitlab-kas",
             "gitlab-pages",
             "gitlab-shell",
             "gitlab-workhorse",

@@ -277,6 +277,8 @@ in {
 
       packages.gitaly = mkPackageOption pkgs "gitaly" { };
 
+      packages.kas = mkPackageOption pkgs "gitlab-kas" { };
+
       packages.pages = mkPackageOption pkgs "gitlab-pages" { };
 
       statePath = mkOption {
