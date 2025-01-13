@@ -315,6 +315,8 @@ in
 
       packages.gitaly = mkPackageOption pkgs "gitaly" { };
 
+      packages.kas = mkPackageOption pkgs "kas" { };
+
       packages.pages = mkPackageOption pkgs "gitlab-pages" { };
 
       statePath = mkOption {

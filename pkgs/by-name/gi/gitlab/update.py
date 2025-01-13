@@ -101,6 +101,7 @@ class GitLabRepo:
             v: self.get_file(v, rev).strip()
             for v in [
                 "GITALY_SERVER_VERSION",
+                "GITLAB_KAS_VERSION",
                 "GITLAB_PAGES_VERSION",
                 "GITLAB_SHELL_VERSION",
                 "GITLAB_ELASTICSEARCH_INDEXER_VERSION",
@@ -263,6 +264,15 @@ def update_gitaly():
     _call_nix_update("gitaly.git", git_version)
 
 
+@cli.command("update-gitlab-kas")
+def update_gitlab_kas():
+    """Update gitlab-kas"""
+    logger.info("Updating gitlab-kas")
+    data = _get_data_json()
+    gitlab_kas_version = data["passthru"]["GITLAB_KAS_VERSION"]
+    _call_nix_update("gitlab-kas", gitlab_kas_version)
+
+
 @cli.command("update-gitlab-pages")
 def update_gitlab_pages():
     """Update gitlab-pages"""
@@ -381,6 +391,7 @@ def commit_gitlab(old_version: str, new_version: str, new_rev: str) -> None:
             "pkgs/by-name/gi/gitlab",
             "pkgs/by-name/gi/gitaly",
             "pkgs/by-name/gi/gitlab-elasticsearch-indexer",
+            "pkgs/by-name/gi/gitlab-kas",
             "pkgs/by-name/gi/gitlab-pages",
         ],
         cwd=NIXPKGS_PATH,
