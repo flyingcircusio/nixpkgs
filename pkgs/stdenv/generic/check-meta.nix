@@ -68,6 +68,7 @@ let
     remediate_allowlist
     remediate_predicate
     remediate_insecure
+    remediate_unfree
     getNameWithVersion
     ;
 
@@ -376,7 +377,7 @@ let
       {
         reason = "unfree";
         msg = "has an unfree license (‘${showLicense attrs.meta.license}’)";
-        remediation = remediate_allowlist "Unfree" (remediate_predicate "allowUnfreePredicate" attrs);
+        remediation = remediate_unfree attrs;
       }
     else if nonEmptyBlocklist && hasBlocklistedLicense attrs then
       {
