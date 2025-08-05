@@ -291,7 +291,7 @@ def update_plugins():
         {'name': 'discourse-github'},
         {'name': 'discourse-ldap-auth', 'owner': 'jonmbake'},
         {'name': 'discourse-math'},
-        {'name': 'discourse-migratepassword', 'owner': 'discoursehosting'},
+        {'name': 'discourse-migratepassword', 'owner': 'communiteq'},
         {'name': 'discourse-openid-connect'},
         {'name': 'discourse-prometheus'},
         {'name': 'discourse-reactions'},
@@ -322,17 +322,60 @@ def update_plugins():
         repo_latest_commit = repo.latest_commit_sha
         try:
             compatibility_spec = repo.get_file('.discourse-compatibility', repo_latest_commit)
-            versions = [(DiscourseVersion(discourse_version), plugin_rev.strip(' '))
-                        for [discourse_version, plugin_rev]
-                        in [line.lstrip("< ").split(':')
-                            for line
-                            in compatibility_spec.splitlines() if line != '']]
+            
+            def parse_compatibility_line(line):
+                """Parse a compatibility line and return (operator, version, plugin_rev)"""
+                line = line.strip()
+                if not line:
+                    return None
+                
+                # Split on colon to separate version spec from plugin rev
+                parts = line.split(':', 1)
+                if len(parts) != 2:
+                    return None
+                
+                version_spec = parts[0].strip()
+                plugin_rev = parts[1].strip()
+                
+                # Parse operator and version
+                if version_spec.startswith('<='):
+                    operator = '<='
+                    version = version_spec[2:].strip()
+                elif version_spec.startswith('<'):
+                    operator = '<'
+                    version = version_spec[1:].strip()
+                else:
+                    # No explicit operator means implicit <=
+                    operator = '<='
+                    version = version_spec
+                
+                return (operator, DiscourseVersion(version), plugin_rev)
+            
+            # Parse all compatibility lines
+            parsed_versions = []
+            for line in compatibility_spec.splitlines():
+                parsed = parse_compatibility_line(line)
+                if parsed:
+                    parsed_versions.append(parsed)
+            
             discourse_version = DiscourseVersion(_get_current_package_version('discourse'))
-            versions = list(filter(lambda ver: ver[0] >= discourse_version, versions))
-            if versions == []:
+            
+            # Find compatible versions based on operators
+            # The logic: if discourse_version matches the constraint, use the pinned plugin_rev
+            # Otherwise, use latest commit
+            compatible_versions = []
+            for operator, version, plugin_rev in parsed_versions:
+                if operator == '<=' and discourse_version <= version:
+                    compatible_versions.append((version, plugin_rev))
+                elif operator == '<' and discourse_version < version:
+                    compatible_versions.append((version, plugin_rev))
+            
+            if compatible_versions == []:
                 rev = repo_latest_commit
             else:
-                rev = versions[0][1]
+                # Sort by version and take the lowest compatible version (most restrictive constraint)
+                compatible_versions.sort(key=lambda x: x[0], reverse=False)
+                rev = compatible_versions[0][1]
                 print(rev)
         except requests.exceptions.HTTPError:
             rev = repo_latest_commit
