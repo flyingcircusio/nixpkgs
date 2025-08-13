@@ -158,10 +158,10 @@ let
   ]);
   sitePackages = ceph-python-env.python.sitePackages;
 
-  version = "16.2.10";
+  version = "16.2.15";
   src = fetchurl {
     url = "http://download.ceph.com/tarballs/ceph-${version}.tar.gz";
-    sha256 = "sha256-342+nUV3mCX7QJfZSnKEfnQFCJwJmVQeYnefJwW/AtU=";
+    hash = "sha256-jEgOy66bgjHeSr9JsU+sTE9ydFnFMDTFaC/mElaApMw=";
   };
 in rec {
   ceph = stdenv.mkDerivation {
@@ -169,22 +169,6 @@ in rec {
     inherit src version;
 
     patches = [
-      ./0000-fix-SPDK-build-env.patch
-      # pacific: include/buffer: include <memory>
-      # fixes build with gcc 12
-      # https://github.com/ceph/ceph/pull/47295
-      (fetchpatch {
-        url = "https://github.com/ceph/ceph/pull/47295/commits/df88789a38c053513d3b2a9b7d12a952fc0c9042.patch";
-        hash = "sha256-je65kBfa5hR0ZKo6ZI10XmD5ZUbKj5rxlGxxI9ZJVfo=";
-      })
-      (fetchpatch {
-        url = "https://github.com/ceph/ceph/pull/47295/commits/2abcbe4e47705e6e0fcc7d9d9b75625f563199af.patch";
-        hash = "sha256-8sWQKoZNHuGuhzX/F+3fY4+kjsrwsfoMdVpfVSj2x5w=";
-      })
-      (fetchpatch {
-        url = "https://github.com/ceph/ceph/pull/47295/commits/13dc077cf6c65a3b8c4f13d896847b9964b3fcbb.patch";
-        hash = "sha256-byfiZh9OJrux/y5m3QCPg0LET6q33ZDXmp/CN+yOSQQ=";
-      })
     ];
 
     nativeBuildInputs = [
