@@ -159,6 +159,7 @@ let
   sitePackages = ceph-python-env.python.sitePackages;
 
   version = "16.2.15";
+  codename = "pacific";
   src = fetchurl {
     url = "http://download.ceph.com/tarballs/ceph-${version}.tar.gz";
     hash = "sha256-jEgOy66bgjHeSr9JsU+sTE9ydFnFMDTFaC/mElaApMw=";
@@ -167,6 +168,9 @@ in rec {
   ceph = stdenv.mkDerivation {
     pname = "ceph";
     inherit src version;
+
+    # create and split out debug symbols
+    separateDebugInfo = true;
 
     patches = [
     ];
@@ -243,12 +247,18 @@ in rec {
 
     meta = getMeta "Distributed storage system";
 
-    passthru.version = version;
+    passthru = {
+      inherit codename version;
+    };
     passthru.tests = { inherit (nixosTests) ceph-single-node ceph-multi-node ceph-single-node-bluestore; };
   };
 
   ceph-client = runCommand "ceph-client-${version}" {
       meta = getMeta "Tools needed to mount Ceph's RADOS Block Devices/Cephfs";
+
+      passthru = {
+        inherit codename version;
+      };
     } ''
       mkdir -p $out/{bin,etc,${sitePackages},share/bash-completion/completions}
       cp -r ${ceph}/bin/{ceph,.ceph-wrapped,rados,rbd,rbdmap} $out/bin
