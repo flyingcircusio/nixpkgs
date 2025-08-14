@@ -1,4 +1,4 @@
-{ lib, stdenv, runCommand, fetchurl, fetchpatch
+{ lib, stdenv, runCommand, fetchzip, fetchpatch
 , ensureNewerSourcesHook
 , cmake, pkg-config
 , which, git
@@ -96,7 +96,7 @@ let
     pname = "ceph-common";
     inherit src version;
 
-    sourceRoot = "ceph-${version}/src/python-common";
+    sourceRoot = "${src.name}/src/python-common";
 
     nativeCheckInputs = [ python.pkgs.pytest ];
     propagatedBuildInputs = with python.pkgs; [ pyyaml six ];
@@ -160,9 +160,9 @@ let
 
   version = "16.2.15";
   codename = "pacific";
-  src = fetchurl {
+  src = fetchzip {
     url = "http://download.ceph.com/tarballs/ceph-${version}.tar.gz";
-    hash = "sha256-jEgOy66bgjHeSr9JsU+sTE9ydFnFMDTFaC/mElaApMw=";
+    hash = "sha256-TEPvvtur8hW2vEbawBXHDVdBg95NsI28AYYUiVGq6D4=";
   };
 in rec {
   ceph = stdenv.mkDerivation {
@@ -272,5 +272,9 @@ in rec {
       # wrapPythonPrograms modifies .ceph-wrapped, so lets just update its paths
       substituteInPlace $out/bin/ceph          --replace ${ceph} $out
       substituteInPlace $out/bin/.ceph-wrapped --replace ${ceph} $out
+
+      # provide upstream udev rules
+      cp -r "${src}/udev" "$out/etc/"
+      substituteInPlace $out/etc/udev/* --replace "/usr/bin/" "$out/bin/"
    '';
 }
