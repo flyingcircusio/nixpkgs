@@ -169,8 +169,8 @@ in rec {
     pname = "ceph";
     inherit src version;
 
-    # create and split out debug symbols
-    separateDebugInfo = true;
+    # explicitly disable debug output, that one is >3GiB
+    separateDebugInfo = false;
 
     patches = [
     ];
