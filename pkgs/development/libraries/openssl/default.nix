@@ -343,8 +343,8 @@ in
   };
 
   openssl_3 = common {
-    version = "3.0.18";
-    hash = "sha256-2Aw09c+QLczx8bXfXruG0DkuNwSeXXPfGzq65y5P/os=";
+    version = "3.0.19";
+    hash = "sha256-+lpBQ7iq4YvlPvLzyvKaLgdHQwuLx00y2IM1uUq2MHI=";
 
     patches = [
       ./3.0/nix-ssl-cert-file.patch
@@ -354,7 +354,7 @@ in
       ./3.0/openssl-disable-kernel-detection.patch
 
       (
-        if stdenv.hostPlatform.isDarwin then ./use-etc-ssl-certs-darwin.patch else ./use-etc-ssl-certs.patch
+        if stdenv.hostPlatform.isDarwin then ./3.0/use-etc-ssl-certs-darwin.patch else ./3.0/use-etc-ssl-certs.patch
       )
     ];
 
