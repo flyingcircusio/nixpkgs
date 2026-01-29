@@ -2,7 +2,7 @@
   useLua ? true,
   usePcre ? true,
   withPrometheusExporter ? true,
-  sslLibrary ? "quictls",
+  sslLibrary ? "openssl",
   stdenv,
   lib,
   fetchurl,
