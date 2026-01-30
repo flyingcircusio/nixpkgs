@@ -90,7 +90,7 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "grub";
-  version = "2.12";
+  version = "2.12.1";
   inherit src;
 
   patches = [
