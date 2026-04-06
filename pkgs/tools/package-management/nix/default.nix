@@ -175,7 +175,9 @@ lib.makeExtensible (
             hash = "sha256-kBuwzMgIE9Tmve0Rpp+q+YCsE2mw9d62M/950ViWeJ0=";
           };
         }).appendPatches
-          patches_common;
+          (patches_common ++ [
+            ./patches/ghsa-g3g9-5vj6-r3gj-2.30.patch
+          ]);
 
       nix_2_30 = addTests "nix_2_30" self.nixComponents_2_30.nix-everything;
 
