@@ -244,7 +244,13 @@ lib.makeExtensible (
             hash = "sha256-eBjgsauQXFz2yeiNoPEzgkf7uyV+S8HYCQgZhPVx/9I=";
           };
         }).appendPatches
-          patches_common;
+          (
+            patches_common
+            ++ [
+              ./patches/ghsa-g3g9-5vj6-r3gj-git.patch
+              ./patches/landlock-abstract-socket-hardening-git.patch
+            ]
+          );
 
       git = addTests "git" self.nixComponents_git.nix-everything;
 
