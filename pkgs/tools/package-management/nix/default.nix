@@ -144,7 +144,9 @@ lib.makeExtensible (
         version = "2.28.5";
         hash = "sha256-oIfAHxO+BCtHXJXLHBnsKkGl1Pw+Uuq1PwNxl+lZ+Oc=";
         self_attribute_name = "nix_2_28";
-        patches = patches_common;
+        patches = patches_common ++ [
+          ./patches/ghsa-g3g9-5vj6-r3gj-2.28.patch
+        ];
       };
 
       nixComponents_2_29 = nixDependencies.callPackage ./modular/packages.nix rec {
