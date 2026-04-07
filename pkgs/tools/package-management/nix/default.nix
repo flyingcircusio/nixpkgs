@@ -175,9 +175,12 @@ lib.makeExtensible (
             hash = "sha256-kBuwzMgIE9Tmve0Rpp+q+YCsE2mw9d62M/950ViWeJ0=";
           };
         }).appendPatches
-          (patches_common ++ [
-            ./patches/ghsa-g3g9-5vj6-r3gj-2.30.patch
-          ]);
+          (
+            patches_common
+            ++ [
+              ./patches/ghsa-g3g9-5vj6-r3gj-2.30.patch
+            ]
+          );
 
       nix_2_30 = addTests "nix_2_30" self.nixComponents_2_30.nix-everything;
 
@@ -212,7 +215,13 @@ lib.makeExtensible (
             hash = "sha256-5aH3xppfBs8j6P7A2wq8WQ05yJvlL7x0gQbWk4RN5eY=";
           };
         }).appendPatches
-          patches_common;
+          (
+            patches_common
+            ++ [
+              ./patches/ghsa-g3g9-5vj6-r3gj-2.32.patch
+              ./patches/landlock-abstract-socket-hardening-2.32.patch
+            ]
+          );
 
       nix_2_32 = addTests "nix_2_32" self.nixComponents_2_32.nix-everything;
 
@@ -228,7 +237,13 @@ lib.makeExtensible (
             hash = "sha256-2Mga4e9ZtOPLwYqF4+hcjdsTImcA7TKUvDDfaF7jqEo=";
           };
         }).appendPatches
-          patches_common;
+          (
+            patches_common
+            ++ [
+              ./patches/ghsa-g3g9-5vj6-r3gj-2.33.patch
+              ./patches/landlock-abstract-socket-hardening-2.33.patch
+            ]
+          );
 
       nix_2_33 = addTests "nix_2_33" self.nixComponents_2_33.nix-everything;
 

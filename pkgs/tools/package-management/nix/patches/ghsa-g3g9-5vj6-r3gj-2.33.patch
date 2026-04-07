@@ -1,0 +1,97 @@
+diff --git a/src/libstore/include/nix/store/local-store.hh b/src/libstore/include/nix/store/local-store.hh
+index 7d93d7045..f5164252e 100644
+--- a/src/libstore/include/nix/store/local-store.hh
++++ b/src/libstore/include/nix/store/local-store.hh
+@@ -459,6 +459,8 @@ private:
+ 
+     friend struct PathSubstitutionGoal;
+     friend struct DerivationGoal;
++    /* Only used for createTempDirInStore. */
++    friend class DerivationBuilderImpl;
+ };
+ 
+ } // namespace nix
+diff --git a/src/libstore/local-store.cc b/src/libstore/local-store.cc
+index b625b6c1b..216a3376d 100644
+--- a/src/libstore/local-store.cc
++++ b/src/libstore/local-store.cc
+@@ -1330,8 +1330,9 @@ std::pair<std::filesystem::path, AutoCloseFD> LocalStore::createTempDirInStore()
+     do {
+         /* There is a slight possibility that `tmpDir' gets deleted by
+            the GC between createTempDir() and when we acquire a lock on it.
+-           We'll repeat until 'tmpDir' exists and we've locked it. */
+-        tmpDirFn = createTempDir(std::filesystem::path{config->realStoreDir.get()}, "tmp");
++           We'll repeat until 'tmpDir' exists and we've locked it.
++           Make the directory accessible only to the current user. */
++        tmpDirFn = createTempDir(std::filesystem::path{config->realStoreDir.get()}, "tmp", /*mode=*/0700);
+         tmpDirFd = openDirectory(tmpDirFn);
+         if (!tmpDirFd) {
+             continue;
+diff --git a/src/libstore/unix/build/derivation-builder.cc b/src/libstore/unix/build/derivation-builder.cc
+index 360b6a484..6622ae8fd 100644
+--- a/src/libstore/unix/build/derivation-builder.cc
++++ b/src/libstore/unix/build/derivation-builder.cc
+@@ -1537,6 +1537,13 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
+         assert(output && scratchPath);
+         auto actualPath = realPathInSandbox(store.printStorePath(*scratchPath));
+ 
++        /* An optional file descriptor of a directory used for intermediate
++           operations. */
++        AutoCloseFD tempDirFd;
++        /* RAII cleanup of a temporary directory inside the store that is used
++           for intermediate operations. */
++        std::optional<AutoDelete> delTempDir;
++
+         auto finish = [&](StorePath finalStorePath) {
+             /* Store the final path */
+             finalOutputs.insert_or_assign(outputName, finalStorePath);
+@@ -1672,6 +1679,25 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
+             return newInfo0;
+         };
+ 
++        auto moveOutputToTempDir = [&]() -> void {
++            std::filesystem::path tempDir;
++            std::tie(tempDir, tempDirFd) = store.createTempDirInStore();
++            delTempDir.emplace(tempDir);
++
++            auto tmpOutput = tempDir / "x";
++
++            /* Serialise and create a fresh copy of the output to break
++               any stale writable file descriptors. Copy through the
++               serialisation/deserialisation. TODO: Use copyRecursive here and
++               make use of reflinking. */
++            auto source = sinkToSource([&](Sink & nextSink) { dumpPath(actualPath, nextSink); });
++            restorePath(tmpOutput, *source, settings.fsyncStorePaths);
++            /* This makes it slightly harder to make sense of the control flow. The rule
++               of thumb is that actualPath points to the current location of the stuff
++               that we'll end up registering. */
++            actualPath = std::move(tmpOutput);
++        };
++
+         ValidPathInfo newInfo = std::visit(
+             overloaded{
+ 
+@@ -1699,14 +1725,7 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
+ 
+                 [&](const DerivationOutput::CAFixed & dof) {
+                     auto & wanted = dof.ca.hash;
+-
+-                    // Replace the output by a fresh copy of itself to make sure
+-                    // that there's no stale file descriptor pointing to it
+-                    Path tmpOutput = actualPath + ".tmp";
+-                    copyFile(std::filesystem::path(actualPath), std::filesystem::path(tmpOutput), true);
+-
+-                    std::filesystem::rename(tmpOutput, actualPath);
+-
++                    moveOutputToTempDir();
+                     return newInfoFromCA(
+                         DerivationOutput::CAFloating{
+                             .method = dof.ca.method,
+@@ -1723,6 +1742,7 @@ SingleDrvOutputs DerivationBuilderImpl::registerOutputs()
+                 },
+ 
+                 [&](const DerivationOutput::Impure & doi) {
++                    moveOutputToTempDir();
+                     return newInfoFromCA(
+                         DerivationOutput::CAFloating{
+                             .method = doi.method,
