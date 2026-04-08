@@ -235,7 +235,13 @@ lib.makeExtensible (
         };
       };
 
-      git = addTests "git" self.nixComponents_git.nix-everything;
+      git = (addTests "git" self.nixComponents_git.nix-everything).overrideAttrs (oA: {
+        meta = oA.meta // {
+          knownVulnerabilities = [
+            "CVE-2026-39860"
+          ];
+        };
+      });
 
       latest = self.nix_2_28;
 
