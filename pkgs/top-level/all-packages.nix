@@ -8246,6 +8246,11 @@ with pkgs;
     boost = boost179.override { enableShared = false; };
   };
 
+  mongodb-8_0 = callPackage ../servers/nosql/mongodb/8.0.nix {
+    sasl = cyrus_sasl;
+    boost = boost179.override { enableShared = false; };
+  };
+
   mssql_jdbc = callPackage ../servers/sql/mssql/jdbc { };
   jtds_jdbc = callPackage ../servers/sql/mssql/jdbc/jtds.nix { };
 
