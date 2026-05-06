@@ -4288,7 +4288,10 @@ with pkgs;
 
   qtspim = libsForQt5.callPackage ../development/tools/misc/qtspim { };
 
-  quictls = lib.warn "quictls ended development and has known openssl 3.3.x vulnerabilities. Updating to a newer NixOS platform replaces quictls with an up-to-date openssl." (callPackage ../development/libraries/quictls { });
+  quictls =
+    lib.warn
+      "quictls ended development and has known openssl 3.3.x vulnerabilities. Updating to a newer NixOS platform replaces quictls with an up-to-date openssl."
+      (callPackage ../development/libraries/quictls { });
 
   quota = if stdenv.hostPlatform.isLinux then linuxquota else unixtools.quota;
 

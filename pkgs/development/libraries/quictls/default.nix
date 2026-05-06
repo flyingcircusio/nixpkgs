@@ -32,10 +32,7 @@ stdenv.mkDerivation rec {
     ./openssl-disable-kernel-detection.patch
 
     (
-      if stdenv.hostPlatform.isDarwin then
-        ./use-etc-ssl-certs-darwin.patch
-      else
-        ./use-etc-ssl-certs.patch
+      if stdenv.hostPlatform.isDarwin then ./use-etc-ssl-certs-darwin.patch else ./use-etc-ssl-certs.patch
     )
   ];
 

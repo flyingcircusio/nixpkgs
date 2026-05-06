@@ -354,7 +354,10 @@ in
       ./3.0/openssl-disable-kernel-detection.patch
 
       (
-        if stdenv.hostPlatform.isDarwin then ./3.0/use-etc-ssl-certs-darwin.patch else ./3.0/use-etc-ssl-certs.patch
+        if stdenv.hostPlatform.isDarwin then
+          ./3.0/use-etc-ssl-certs-darwin.patch
+        else
+          ./3.0/use-etc-ssl-certs.patch
       )
     ];
 
