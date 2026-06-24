@@ -80,6 +80,7 @@ let
     outputs = [
       "out"
       "static"
+      "dev"
       "man"
     ];
 
@@ -104,6 +105,7 @@ let
 
     postInstall = ''
       moveToOutput "lib/*.a" $static
+      moveToOutput bin/mysql_config "$dev"
       so=${stdenv.hostPlatform.extensions.sharedLibrary}
       ln -s libmysqlclient$so $out/lib/libmysqlclient_r$so
     '';
