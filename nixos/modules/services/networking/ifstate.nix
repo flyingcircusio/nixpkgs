@@ -182,7 +182,11 @@ in
         description = "IfState";
 
         wantedBy = [
+          "network.target"
           "multi-user.target"
+        ];
+        before = [
+          "network.target"
         ];
 
         # mount is always available on nixos, avoid adding additional store paths to the closure
@@ -190,6 +194,7 @@ in
 
         serviceConfig = {
           Type = "oneshot";
+          RemainAfterExit = true;
           ExecStart = "${lib.getExe cfg.package} --config ${
             config.environment.etc."ifstate/ifstate.yaml".source
           } apply";

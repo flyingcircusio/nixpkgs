@@ -1991,6 +1991,7 @@
   ./tasks/filesystems/xfs.nix
   ./tasks/filesystems/zfs.nix
   ./tasks/lvm.nix
+  ./tasks/network-interfaces-ifstate.nix
   ./tasks/network-interfaces-scripted.nix
   ./tasks/network-interfaces-systemd.nix
   ./tasks/network-interfaces.nix

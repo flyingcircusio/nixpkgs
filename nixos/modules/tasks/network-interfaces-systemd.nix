@@ -240,7 +240,7 @@ in
         optional (cfg.bridges != { }) "bridge" ++ optional (cfg.vlans != { }) "8021q";
     })
 
-    (mkIf cfg.useNetworkd {
+    (mkIf (cfg.backend == "systemd-networkd") {
 
       assertions = [
         {

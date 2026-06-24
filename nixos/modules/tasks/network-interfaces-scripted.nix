@@ -868,7 +868,7 @@ in
 
   config = mkMerge [
     bondWarnings
-    (mkIf (!cfg.useNetworkd) normalConfig)
+    (mkIf (cfg.backend == "scripted") normalConfig)
     {
       # Ensure slave interfaces are brought up
       networking.interfaces = genAttrs slaves (i: { });

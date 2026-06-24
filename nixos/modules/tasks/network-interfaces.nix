@@ -1690,12 +1690,25 @@ in
     };
 
     networking.useNetworkd = mkOption {
-      default = false;
+      default = (cfg.backend == "systemd-networkd");
+      defaultText = "";
       type = types.bool;
       description = ''
         Whether we should use networkd as the network configuration backend or
         the legacy script based system. Note that this option is experimental,
         enable at your own risk.
+
+        # XXX deprecated, use `networking.backend = "systemd-networkd"` instead.
+      '';
+    };
+    networking.backend = mkOption {
+      type = types.enum [ "none" "scripted" "systemd-networkd" "ifstate" ];
+      default = "scripted";
+      description = ''
+        enable at your own risk.
+        Which network management stack to use as backend for the network configuration.
+
+        Use `none` to disable network management based on `networking.*` options.
       '';
     };
 
