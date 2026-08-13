@@ -1417,8 +1417,8 @@ in
         # We also don't provide convinient database settings as the interfaces changes quite a lot with NixOS 26.11.
         # However, we support enabling this option, set the correct systemd dependencies, but the user needs to to the
         # DB setup themself.
-        # We cannot use lib.mkDefault here, because services.dockerRegistry.extraConfig is just an attrset
-        database.enabled = false;
+        database.enabled = lib.mkDefault false;
+        database.host = "";
       };
     };
 
