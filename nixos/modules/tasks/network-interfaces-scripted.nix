@@ -163,25 +163,10 @@ let
 
         deviceDependency =
           dev:
-          # Use systemd service if we manage device creation, else
-          # trust udev when not in a container
-          if (dev == null || dev == "lo") then
+          if (dev == null || dev == "lo" || config.boot.isContainer) then
             [ ]
-          else if
-            (hasAttr dev (filterAttrs (k: v: v.virtual) cfg.interfaces))
-            || (hasAttr dev cfg.bridges)
-            || (hasAttr dev cfg.bonds)
-            || (hasAttr dev cfg.macvlans)
-            || (hasAttr dev cfg.ipvlans)
-            || (hasAttr dev cfg.sits)
-            || (hasAttr dev cfg.ipips)
-            || (hasAttr dev cfg.vlans)
-            || (hasAttr dev cfg.greTunnels)
-            || (hasAttr dev cfg.vswitches)
-          then
-            [ "${dev}-netdev.service" ]
           else
-            optional (!config.boot.isContainer) (subsystemDevice dev);
+            [ "${dev}-netdev.service" ];
 
         # For each interface <foo>, creates a network-addresses-<foo>.service
         # job that performs static address configuration.
