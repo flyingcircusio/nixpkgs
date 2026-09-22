@@ -115,6 +115,8 @@ rec {
 
   json = callPackage ../development/lua-modules/json { };
 
+  lua-cs-bouncer = callPackage ../development/lua-modules/lua-cs-bouncer { };
+
   lua-https = callPackage ../development/lua-modules/lua-https { };
 
   lua-pam = callPackage (
