@@ -2469,6 +2469,7 @@ final: prev: {
       fetchFromGitHub,
       fetchurl,
       luaOlder,
+      lua-resty-string,
     }:
     buildLuarocksPackage {
       pname = "lua-resty-http";
@@ -2484,6 +2485,10 @@ final: prev: {
         tag = "v0.18.0";
         hash = "sha256-3rHm44vLIT9cHIQa5EHbwdmB/KVaLl/RbvLgNsnYwc4=";
       };
+
+      propagatedBuildInputs = [
+        lua-resty-string
+      ];
 
       disabled = luaOlder "5.1";
 
