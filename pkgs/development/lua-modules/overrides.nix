@@ -39,6 +39,7 @@
   libxcrypt,
   libyaml,
   lua-language-server,
+  lua-resty-string,
   mariadb,
   mpfr,
   neovim-unwrapped,
@@ -548,7 +549,7 @@ in
   lua-resty-http = prev.lua-resty-http.overrideAttrs (old: {
     # https://github.com/ledgetech/lua-resty-http/issues/352
     propagatedBuildInputs = old.propagatedBuildInputs ++ [
-      final.lua-resty-string
+      lua-resty-string
     ];
   });
 
