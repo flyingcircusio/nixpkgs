@@ -416,16 +416,16 @@ in
             SystemCallErrorNumber = "EPERM";
             UMask = "0007";
             MemoryDenyWriteExecute = false; # for pcre2 jit
-            CapabilityBoundingSet = [
-              "CAP_CHOWN"
-              "CAP_KILL"
-              "CAP_SETUID"
-              "CAP_SETGID"
-              "CAP_SETPCAP"
-            ]
-            ++ lib.optionals (poolOpts.settings ? chroot) [
-              "CAP_SYS_CHROOT"
-            ];
+            #CapabilityBoundingSet = [
+            #  "CAP_CHOWN"
+            #  "CAP_KILL"
+            #  "CAP_SETUID"
+            #  "CAP_SETGID"
+            #  "CAP_SETPCAP"
+            #]
+            #++ lib.optionals (poolOpts.settings ? chroot) [
+            #  "CAP_SYS_CHROOT"
+            #];
           };
       }
     ) cfg.pools;
